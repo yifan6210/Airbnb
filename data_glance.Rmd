@@ -1,0 +1,25 @@
+---
+title: "data_glance"
+date: "10/9/2018"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+listings <- read.csv("listings.csv", header = TRUE) #can read the file directly only if it is in the same folder
+names(listings) #list all variables
+head_10<- head(listings, n = 10)
+```
+
+```{r}
+data <- listings %>%
+select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price)
+```
+
+# Using the . in the formula interface includes all non-response variables in the data frame
+
+testing
