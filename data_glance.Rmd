@@ -21,4 +21,4 @@ select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,mi
   mutate(parking = str_detect(amenities, "park"))
 ```
 
-# Using the . in the formula interface includes all non-response variables in the data frame
+# Using the . in the formula interface includes all non-response variables in the data frame.
