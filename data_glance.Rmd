@@ -10,7 +10,7 @@ library(dplyr)
 ```
 
 ```{r}
-listings <- read.csv("listings.csv", header = TRUE) #can read the file directly only if it is in the same folder
+listings <- read.csv("Cleaned_listings_Beijing.csv", header = TRUE) #can read the file directly only if it is in the same folder
 names(listings) #list all variables
 head_10<- head(listings, n = 10)
 ```
