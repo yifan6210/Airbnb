@@ -14,11 +14,25 @@ listings <- read.csv("Cleaned_listings_Beijing.csv", header = TRUE) #can read th
 names(listings) #list all variables
 head_10<- head(listings, n = 10)
 ```
-
+##### data cleaning 
+###### getting park out of amenities
 ```{r}
 data <- listings %>%
 select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
   mutate(parking = str_detect(amenities, "park"))
+```
+###### getting rid of dollar signs
+
+```{r}
+data$price_2 = gsub("\\$","",data$price)
+data$extra_people_2 = gsub("\\$","",data$extra_people)
+```
+
+##### regression models 
+
+```{r}
+mod1 <- lm(price_2~parking,data) #couldn't run
+summary(mod1)
 ```
 
 # Using the . in the formula interface includes all non-response variables in the data frame.
