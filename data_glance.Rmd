@@ -12,7 +12,7 @@ library(dplyr)
 ```{r}
 library(readxl) ## reading the excel 
 library(stringr)
-listings <- read_excel("Clb.xlsx", skip = 1)
+listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
 View(listings)
 ```
 
@@ -27,7 +27,7 @@ select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,mi
 
 ```{r}
 
-data_cleaned <- data_raw %>% 
+data_cleaned <- data_raw %>%  #from albert
   mutate(
     price = str_replace_all(price, "\\$", ""),
     price = str_replace_all(price, ",", ""),
