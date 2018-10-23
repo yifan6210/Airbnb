@@ -10,28 +10,46 @@ library(dplyr)
 ```
 
 ```{r}
-listings <- read.csv("Cleaned_listings_Beijing.csv", header = TRUE) #can read the file directly only if it is in the same folder
-names(listings) #list all variables
-head_10<- head(listings, n = 10)
+library(readxl) ## reading the excel 
+library(stringr)
+listings <- read_excel("Clb.xlsx", skip = 1)
+View(listings)
 ```
+
 ##### data cleaning 
 ###### getting park out of amenities
 ```{r}
-data <- listings %>%
+data_raw <- listings %>%
 select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
   mutate(parking = str_detect(amenities, "park"))
 ```
 ###### getting rid of dollar signs
 
 ```{r}
-data$price_2 = gsub("\\$","",data$price)
-data$extra_people_2 = gsub("\\$","",data$extra_people)
+
+data_cleaned <- data_raw %>% 
+  mutate(
+    price = str_replace_all(price, "\\$", ""),
+    price = str_replace_all(price, ",", ""),
+    price = as.numeric(price)
+    )
+
+ggplot(data_cleaned, aes(x=price)) +
+  geom_histogram() +
+  scale_x_log10()
+
+ggplot(data_cleaned, aes(x=room_type, y =price))  + 
+  geom_boxplot() + 
+  scale_y_log10()
+
+lm(price~room_type, data = data_cleaned) %>% summary()
 ```
 
-##### regression models 
+##### regression models with all
 
 ```{r}
-mod1 <- lm(price_2~parking,data) #couldn't run
+
+mod1 <- lm(price~accommodates + instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
 summary(mod1)
 ```
 
