@@ -21,7 +21,8 @@ View(listings)
 ```{r}
 data_raw <- listings %>%
 select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
-  mutate(parking = str_detect(amenities, "park"))
+  mutate(parking = str_detect(amenities, "park")) #one hot coding
+#for loop val in c("TV....")
 ```
 ###### getting rid of dollar signs
 
@@ -65,4 +66,4 @@ mod2 <- lm(price~accommodates + instant_bookable + room_type+ neighbourhood_clea
 summary(mod2)
 ```
 
-# Using the . in the formula interface includes all non-response variables in the data frame.
+# Using the . in the formula interface includes all non-response variables in the data frame
