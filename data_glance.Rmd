@@ -21,7 +21,20 @@ View(listings)
 ```{r}
 data_raw <- listings %>%
 select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
-  mutate(parking = str_detect(amenities, "park")) #one hot coding
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating")) #in caps or not
+  
+
+  #one hot coding
 #for loop val in c("TV....")
 ```
 ###### getting rid of dollar signs
