@@ -79,4 +79,4 @@ mod2 <- lm(price~accommodates + instant_bookable + room_type+ neighbourhood_clea
 summary(mod2)
 ```
 
-# Using the . in the formula interface includes all non-response variables in the data frame.
+# Using the . in the formula interface includes all non-response variables in the data frame
