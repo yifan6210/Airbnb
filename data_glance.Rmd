@@ -5,6 +5,7 @@ output: html_document
 ---
 
 ```{r}
+install.packages("tidyverse")
 library(tidyverse)
 library(dplyr)
 ```
@@ -13,7 +14,7 @@ library(dplyr)
 library(readxl) ## reading the excel 
 library(stringr)
 listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
-View(listings)
+
 ```
 
 ##### data cleaning 
@@ -63,6 +64,27 @@ summary(mod1)
 ```{r}
 mod2 <- lm(price~accommodates + instant_bookable + room_type+ neighbourhood_cleansed + extra_people, data_cleaned)
 summary(mod2)
+```
+
+```{r}
+# mean price of the accomodation by district
+MeanP_by_district <- data_cleaned %>% 
+  group_by(neighbourhood_cleansed) %>% 
+  summarise(price=mean(price))
+
+#Histogram of mean price
+
+ggplot(MeanP_by_district,mapping = aes(x=neighbourhood_cleansed,y=price))+geom_col()+
+  coord_flip() 
+
+#Boxplot of the median price for each district
+
+ggplot(data_cleaned, aes(x=neighbourhood_cleansed, y =price))  + 
+  geom_boxplot() + 
+  scale_y_log10()+ coord_flip()
+
+
+
 ```
 
 # Using the . in the formula interface includes all non-response variables in the data frame.
