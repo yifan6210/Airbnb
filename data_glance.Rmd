@@ -114,6 +114,4 @@ ggplot(data_cleaned, aes(x=neighbourhood_cleansed, y =price))  +
 # Using the . in the formula interface includes all non-response variables in the data frame.
 =======
 # Using the . in the formula interface includes all non-response variables in the data frame
->>>>>>> 19e29e7f9caacdcb8e9ee5d314413534754ab135
-=======
-# Using the . in the formula interface includes all non-response variables in the data frame。
+
