@@ -79,6 +79,7 @@ cor(cor_data)
 ```{r}
 
 mod1 <- lm(price_per_p~ instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
+#Jeez.... that's bad
 summary(mod1)
 ```
 
@@ -86,6 +87,7 @@ summary(mod1)
 mod2 <- lm(price_per_p ~ instant_bookable + room_type+ neighbourhood_cleansed + extra_people, data_cleaned)
 summary(mod2)
 ```
+
 
 <<<<<<< HEAD
 ```{r}
@@ -113,3 +115,6 @@ ggplot(data_cleaned, aes(x=neighbourhood_cleansed, y =price))  +
 =======
 # Using the . in the formula interface includes all non-response variables in the data frame
 >>>>>>> 19e29e7f9caacdcb8e9ee5d314413534754ab135
+=======
+# Using the . in the formula interface includes all non-response variables in the data frame。
+>>>>>>> 79323c67557a4376979d6a0a349e8b4d72269cac
