@@ -5,7 +5,7 @@ output: html_document
 ---
 
 ```{r}
-install.packages("tidyverse")
+#install.packages("tidyverse")
 library(tidyverse)
 library(dplyr)
 ```
@@ -39,6 +39,8 @@ select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,mi
 #one hot coding
 #for loop val in c("TV....")
 ```
+
+
 ###### getting rid of dollar signs
 
 ```{r}
@@ -50,20 +52,12 @@ data_cleaned <- data_raw %>%  #from albert
     price = as.numeric(price)
     )
 
-ggplot(data_cleaned, aes(x=price)) +
-  geom_histogram() +
-  scale_x_log10()
-
-ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
-  geom_boxplot() + 
-  scale_y_log10()
-
-lm(price~room_type, data = data_cleaned) %>% summary()
 ```
+
 ##### price become price/max commodate
 
 ```{r}
-data_cleaned <- data_cleaned%>%
+data_cleaned <- data_cleaned %>%
   mutate(price_per_p = price/accommodates)
 ```
 
@@ -77,7 +71,6 @@ cor(cor_data)
 
 
 ```{r}
-
 mod1 <- lm(price_per_p~ instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
 #Jeez.... that's bad
 summary(mod1)
@@ -110,6 +103,7 @@ ggplot(data_cleaned, aes(x = neighbourhood_cleansed, y = price_per_p))  +
   scale_y_log10() + coord_flip()
   
 ```
+<<<<<<< HEAD
  
 ```{r}
 #mutate number of listings sorted by area
@@ -122,5 +116,19 @@ ggplot(neighbourhood_data, aes(x = neighbourhood_cleansed, y = number_listings))
 ```
 
 
+=======
+#### albert plot
+```{r}
+ggplot(data_cleaned, aes(x=price_per_p)) +
+  geom_histogram() +
+  scale_x_log10()
 
-# Using the . in the formula interface includes all non-response variables in the data frams
+ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
+  geom_boxplot() + 
+  scale_y_log10()
+
+lm(price_per_p~room_type, data = data_cleaned) %>% summary()
+```
+>>>>>>> b48823d313f5c56639a0a6300d86e87e6bb4e9b1
+
+# Using the .to includes all non-response variables in the data frame
