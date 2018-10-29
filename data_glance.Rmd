@@ -54,7 +54,7 @@ ggplot(data_cleaned, aes(x=price)) +
   geom_histogram() +
   scale_x_log10()
 
-ggplot(data_cleaned, aes(x=room_type, y =price))  + 
+ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
   geom_boxplot() + 
   scale_y_log10()
 
@@ -94,7 +94,7 @@ summary(mod2)
 # mean price of the accomodation by district
 MeanP_by_district <- data_cleaned %>% 
   group_by(neighbourhood_cleansed) %>% 
-  summarise(price=mean(price))
+  summarise(price=mean(price_per_p))
 
 #Histogram of mean price
 
@@ -106,8 +106,6 @@ ggplot(MeanP_by_district,mapping = aes(x=neighbourhood_cleansed,y=price))+geom_c
 ggplot(data_cleaned, aes(x=neighbourhood_cleansed, y =price))  + 
   geom_boxplot() + 
   scale_y_log10()+ coord_flip()
-
-
 
 ```
 
