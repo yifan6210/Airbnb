@@ -22,7 +22,22 @@ listings <- read_excel("Clb.xlsx", skip = 1) #from albert
 ```{r}
 data_raw <- listings %>%
 select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
-  mutate(parking = str_detect(amenities, "park"))
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace")) #in caps or not  
+  
+
+#one hot coding
+#for loop val in c("TV....")
 ```
 ###### getting rid of dollar signs
 
@@ -45,27 +60,34 @@ ggplot(data_cleaned, aes(x=room_type, y =price))  +
 
 lm(price~room_type, data = data_cleaned) %>% summary()
 ```
+##### price become price/max commodate
+
+```{r}
+data_cleaned <- data_cleaned%>%
+  mutate(price_per_p = price/accommodates)
+```
 
 ##### regression models with all
 
 ```{r}
 cor_data <-  data_cleaned %>% 
-  select(accommodates,extra_people,minimum_nights,price) #only on numerical
+  select(accommodates,extra_people,minimum_nights,price_per_p) #only on numerical
 cor(cor_data)
 ```
 
 
 ```{r}
 
-mod1 <- lm(price~accommodates + instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
+mod1 <- lm(price_per_p~ instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
 summary(mod1)
 ```
 
 ```{r}
-mod2 <- lm(price~accommodates + instant_bookable + room_type+ neighbourhood_cleansed + extra_people, data_cleaned)
+mod2 <- lm(price_per_p ~ instant_bookable + room_type+ neighbourhood_cleansed + extra_people, data_cleaned)
 summary(mod2)
 ```
 
+<<<<<<< HEAD
 ```{r}
 # mean price of the accomodation by district
 MeanP_by_district <- data_cleaned %>% 
@@ -88,3 +110,6 @@ ggplot(data_cleaned, aes(x=neighbourhood_cleansed, y =price))  +
 ```
 
 # Using the . in the formula interface includes all non-response variables in the data frame.
+=======
+# Using the . in the formula interface includes all non-response variables in the data frame
+>>>>>>> 19e29e7f9caacdcb8e9ee5d314413534754ab135
