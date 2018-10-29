@@ -40,13 +40,6 @@ select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,mi
 #for loop val in c("TV....")
 ```
 
-##### price become price/max commodate
-
-```{r}
-data_cleaned <- data_cleaned%>%
-  mutate(price_per_p = price/accommodates)
-```
-
 
 ###### getting rid of dollar signs
 
@@ -59,15 +52,13 @@ data_cleaned <- data_raw %>%  #from albert
     price = as.numeric(price)
     )
 
-ggplot(data_cleaned, aes(x=price)) +
-  geom_histogram() +
-  scale_x_log10()
+```
 
-ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
-  geom_boxplot() + 
-  scale_y_log10()
+##### price become price/max commodate
 
-lm(price~room_type, data = data_cleaned) %>% summary()
+```{r}
+data_cleaned <- data_cleaned %>%
+  mutate(price_per_p = price/accommodates)
 ```
 
 ##### regression models with all
@@ -80,7 +71,6 @@ cor(cor_data)
 
 
 ```{r}
-
 mod1 <- lm(price_per_p~ instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
 #Jeez.... that's bad
 summary(mod1)
@@ -111,6 +101,18 @@ ggplot(data_cleaned, aes(x = neighbourhood_cleansed, y = price_per_p))  +
   geom_boxplot() +
   scale_y_log10() + coord_flip()
   
+```
+#### albert plot
+```{r}
+ggplot(data_cleaned, aes(x=price_per_p)) +
+  geom_histogram() +
+  scale_x_log10()
+
+ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
+  geom_boxplot() + 
+  scale_y_log10()
+
+lm(price_per_p~room_type, data = data_cleaned) %>% summary()
 ```
 
 # Using the .to includes all non-response variables in the data frame
