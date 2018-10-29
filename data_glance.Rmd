@@ -92,21 +92,22 @@ summary(mod2)
 
 ```{r}
 # mean price of the accomodation by district
-MeanP_by_district <- data_cleaned %>% 
-  group_by(neighbourhood_cleansed) %>% 
-  summarise(price=mean(price_per_p))
+MeanP_by_district <- data_cleaned %>%
+  group_by(neighbourhood_cleansed) %>%
+  summarise(price_per_p = mean(price_per_p))
 
 #Histogram of mean price
 
-ggplot(MeanP_by_district,mapping = aes(x=neighbourhood_cleansed,y=price))+geom_col()+
-  coord_flip() 
+ggplot(MeanP_by_district,
+       mapping = aes(x = neighbourhood_cleansed, y = price_per_p)) + geom_col() +
+       coord_flip() 
 
 #Boxplot of the median price for each district
 
-ggplot(data_cleaned, aes(x=neighbourhood_cleansed, y =price))  + 
-  geom_boxplot() + 
-  scale_y_log10()+ coord_flip()
-
+ggplot(data_cleaned, aes(x = neighbourhood_cleansed, y = price_per_p))  +
+  geom_boxplot() +
+  scale_y_log10() + coord_flip()
+  
 ```
 
 # Using the . in the formula interface includes all non-response variables in the data frame.
