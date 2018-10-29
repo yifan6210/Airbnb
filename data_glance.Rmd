@@ -88,6 +88,7 @@ mod2 <- lm(price_per_p ~ instant_bookable + room_type+ neighbourhood_cleansed + 
 summary(mod2)
 ```
 
+--------------------------------------------------------------------------------------
 # Using the . in the formula interface includes all non-response variables in the data frame.
 
 ```{r}
@@ -109,5 +110,17 @@ ggplot(data_cleaned, aes(x = neighbourhood_cleansed, y = price_per_p))  +
   scale_y_log10() + coord_flip()
   
 ```
+ 
+```{r}
+#mutate number of listings sorted by area
+ neighbourhood_data<-data_cleaned %>% 
+  group_by(neighbourhood_cleansed) %>% 
+  summarize(number_listings=n()) 
+
+ggplot(neighbourhood_data, aes(x = neighbourhood_cleansed, y = number_listings))  +
+  geom_col() + coord_flip()
+```
+
+
 
 # Using the . in the formula interface includes all non-response variables in the data frams
