@@ -14,6 +14,7 @@ library(dplyr)
 library(readxl) ## reading the excel 
 library(stringr)
 listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
+listings_numerical <- read_excel("Clb_numerical.xlsx", skip=1)
 
 ```
 
@@ -51,7 +52,19 @@ data_cleaned <- data_raw %>%  #from albert
     price = str_replace_all(price, ",", ""),
     price = as.numeric(price)
     )
-
+#change all factor to numerical in listings_numerical
+listings_numerical_cleaned <- listings_numerical %>%
+  mutate(
+    price = as.numeric(price),
+    weekly_price= as.numeric(weekly_price),
+    monthly_price = as.numeric(monthly_price),
+    security_deposit = as.numeric(security_deposit),
+    cleaning_fee  = as.numeric(cleaning_fee ),
+    extra_people = as.numeric(extra_people),
+    zipcode = as.numeric(zipcode),
+    host_response_rate = as.numeric(host_response_rate)
+    )
+  
 ```
 
 ##### price become price/max commodate
@@ -127,5 +140,12 @@ ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  +
 
 lm(price_per_p~room_type, data = data_cleaned) %>% summary()
 ```
+
+```{r}
+# Run .null on all numerical and Catergorical Data
+mfull <- lm(price ~ ., data=listings_numerical)
+
+```
+
 
 # Using the .to includes all non-response variables in the data frame
