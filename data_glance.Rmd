@@ -14,7 +14,7 @@ library(dplyr)
 library(readxl) ## reading the excel 
 library(stringr)
 listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
-listings_numerical <- read_excel("Clb_numerical.xlsx")
+listings_numerical <- read.csv("Clb_numerical.csv",skip=1)
 
 ```
 
@@ -52,7 +52,18 @@ data_cleaned <- data_raw %>%  #from albert
     price = str_replace_all(price, ",", ""),
     price = as.numeric(price)
     )
-
+listings_numerical_cleaned <- listings_numerical %>%
+  mutate(
+    price = as.numeric(price),
+    weekly_price= as.numeric(weekly_price),
+    monthly_price = as.numeric(monthly_price),
+    security_deposit = as.numeric(security_deposit),
+    cleaning_fee  = as.numeric(cleaning_fee ),
+    extra_people = as.numeric(extra_people),
+    zipcode = as.numeric(zipcode),
+    host_response_rate = as.numeric(host_response_rate)
+    )
+  
 ```
 
 ##### price become price/max commodate
