@@ -52,6 +52,7 @@ data_cleaned <- data_raw %>%  #from albert
     price = str_replace_all(price, ",", ""),
     price = as.numeric(price)
     )
+#change all factor to numerical in listings_numerical
 listings_numerical_cleaned <- listings_numerical %>%
   mutate(
     price = as.numeric(price),
