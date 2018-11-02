@@ -14,6 +14,7 @@ library(dplyr)
 library(readxl) ## reading the excel 
 library(stringr)
 listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
+listings_numerical <- read_excel("Clb_numerical.xlsx")
 
 ```
 
@@ -130,5 +131,12 @@ ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  +
 lm(price_per_p~room_type, data = data_cleaned) %>% summary()
 ```
 >>>>>>> b48823d313f5c56639a0a6300d86e87e6bb4e9b1
+
+```{r}
+# Run .null on all numerical and Catergorical Data
+mfull <- lm(price ~ ., data=listings_numerical)
+
+```
+
 
 # Using the .to includes all non-response variables in the data frame
