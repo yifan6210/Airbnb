@@ -8,6 +8,8 @@ output: html_document
 #install.packages("tidyverse")
 library(tidyverse)
 library(dplyr)
+install.packages("varhandle")
+require(varhandle)
 ```
 
 ```{r}
@@ -52,17 +54,20 @@ data_cleaned <- data_raw %>%  #from albert
     price = str_replace_all(price, ",", ""),
     price = as.numeric(price)
     )
-#change all factor to numerical in listings_numerical
+#change all factor to numerical in listings_numerical 
+#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
 listings_numerical_cleaned <- listings_numerical %>%
   mutate(
-    price = as.numeric(price),
-    weekly_price= as.numeric(weekly_price),
-    monthly_price = as.numeric(monthly_price),
-    security_deposit = as.numeric(security_deposit),
-    cleaning_fee  = as.numeric(cleaning_fee ),
-    extra_people = as.numeric(extra_people),
-    zipcode = as.numeric(zipcode),
-    host_response_rate = as.numeric(host_response_rate)
+    price = str_replace_all(price, "\\$", ""),
+    price = str_replace_all(price, ",", ""),
+     price = as.numeric(price),
+    #weekly_price= as.numeric(weekly_price),
+   # monthly_price = as.numeric(monthly_price),
+    #security_deposit = as.numeric(security_deposit),
+    #cleaning_fee  = as.numeric(cleaning_fee ),
+    #extra_people = as.numeric(extra_people),
+    #zipcode = as.numeric(zipcode),
+   # host_response_rate = as.numeric(host_response_rate)
     )
   
 ```
