@@ -5,25 +5,24 @@ output: html_document
 ---
 
 ```{r}
-#install.packages("tidyverse")
 library(tidyverse)
+library(readxl)
+library(stringr)
 library(dplyr)
-install.packages("varhandle")
-require(varhandle)
 ```
 
 ```{r}
-library(readxl) ## reading the excel 
-library(stringr)
-listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
-listings_numerical <- read_excel("Clb_numerical.xlsx", skip=1)
-
+listings <- read_excel("Clb.xlsx", skip = 1)%>%
+  mutate(price_per_p = price/accommodates) #all variables, 97. from albert + mutated price 
+listings_numerical <- read_excel("Clb_numerical.xlsx", skip=1) %>%
+select(-(cancellation_policy))%>%
+  mutate(price_per_p = price/accommodates)# all numerical variables, 35 
 ```
 
 ##### data cleaning 
-###### getting park out of amenities
+
 ```{r}
-data_raw <- listings %>%
+listings_amenities <- listings %>% # contains only amenities 
 select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
@@ -36,75 +35,31 @@ select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,mi
          dryer = str_detect(amenities,"Dryer"),
          elevator = str_detect(amenities,"Elavator"),
          heat = str_detect(amenities,"Heating"),
-         workspace = str_detect(amenities,"Laptop friendly workspace")) #in caps or not  
+         workspace = str_detect(amenities,"Laptop friendly workspace"),
+         price_per_p = price/accommodates)  
   
-
-#one hot coding
-#for loop val in c("TV....")
-```
-
-
-###### getting rid of dollar signs
-
-```{r}
-
-data_cleaned <- data_raw %>%  #from albert
-  mutate(
-    price = str_replace_all(price, "\\$", ""),
-    price = str_replace_all(price, ",", ""),
-    price = as.numeric(price)
-    )
-#change all factor to numerical in listings_numerical 
-#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
-listings_numerical_cleaned <- listings_numerical %>%
-  mutate(
-    price = str_replace_all(price, "\\$", ""),
-    price = str_replace_all(price, ",", ""),
-     price = as.numeric(price),
-    #weekly_price= as.numeric(weekly_price),
-   # monthly_price = as.numeric(monthly_price),
-    #security_deposit = as.numeric(security_deposit),
-    #cleaning_fee  = as.numeric(cleaning_fee ),
-    #extra_people = as.numeric(extra_people),
-    #zipcode = as.numeric(zipcode),
-   # host_response_rate = as.numeric(host_response_rate)
-    )
-  
-```
-
-##### price become price/max commodate
-
-```{r}
-data_cleaned <- data_cleaned %>%
-  mutate(price_per_p = price/accommodates)
 ```
 
 ##### regression models with all
 
 ```{r}
-cor_data <-  data_cleaned %>% 
-  select(accommodates,extra_people,minimum_nights,price_per_p) #only on numerical
-cor(cor_data)
+#only on numerical
+cor_data <- listings_numerical %>%
+  select(-c(latitude, longitude,host_response_rate))# get rid of chr
+# need to get rid of N/A, albert?
+
+
+cor_test <- listings_numerical%>%
+  select(price_per_p,extra_people,bedrooms,host_listings_count,bathrooms, beds, weekly_price, number_of_reviews,security_deposit,minimum_nights)
+cor(cor_test)
 ```
-
-
-```{r}
-mod1 <- lm(price_per_p~ instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
-#Jeez.... that's bad
-summary(mod1)
-```
-
-```{r}
-mod2 <- lm(price_per_p ~ instant_bookable + room_type+ neighbourhood_cleansed + extra_people, data_cleaned)
-summary(mod2)
-```
-
 --------------------------------------------------------------------------------------
 # Using the . in the formula interface includes all non-response variables in the data frame.
 
+# interpretation 
 ```{r}
 # mean price of the accomodation by district
-MeanP_by_district <- data_cleaned %>%
+MeanP_by_district <- listings %>%
   group_by(neighbourhood_cleansed) %>%
   summarise(price_per_p = mean(price_per_p))
 
@@ -113,44 +68,83 @@ MeanP_by_district <- data_cleaned %>%
 ggplot(MeanP_by_district,
        mapping = aes(x = neighbourhood_cleansed, y = price_per_p)) + geom_col() +
        coord_flip() 
+#suburbs have the highest average pricing 
 
 #Boxplot of the median price for each district
 
-ggplot(data_cleaned, aes(x = neighbourhood_cleansed, y = price_per_p))  +
+ggplot(listings, aes(x = neighbourhood_cleansed, y = price_per_p))  +
   geom_boxplot() +
   scale_y_log10() + coord_flip()
+# The range of price for the center districts are most stable, in terms of variability.
+# Where as, this is not the case for the suburbs, despite the fact that they have similar median.
+# According to the graph, we realize that it is important to know what varaibles predict the 
+# price.
   
 ```
 
 ```{r}
 #mutate number of listings sorted by area
- neighbourhood_data<-data_cleaned %>% 
+ neighbourhood_data<-listings %>% 
   group_by(neighbourhood_cleansed) %>% 
-  summarize(number_listings=n()) 
+  summarize(number_listings=n())
 
 ggplot(neighbourhood_data, aes(x = neighbourhood_cleansed, y = number_listings))  +
   geom_col() + coord_flip()
 ```
-
+# top four most popular districts: ChaoYang, DongCheng, Haidian, Xichen.
 
 #### albert plot
 ```{r}
-ggplot(data_cleaned, aes(x=price_per_p)) +
-  geom_histogram() +
-  scale_x_log10()
+ggplot(listings, aes(x=price_per_p)) +
+  geom_histogram()+
+  scale_x_log10() # if not looking at the outliers, almost normal distribution
+# center around 200-300 rmb per person per night 
 
-ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
+ggplot(listings, aes(x=room_type, y =price_per_p))  + 
   geom_boxplot() + 
   scale_y_log10()
+# entire home/apt is more expensive than private room then shared room, but not by a lot
 
-lm(price_per_p~room_type, data = data_cleaned) %>% summary()
 ```
 
 ```{r}
 # Run .null on all numerical and Catergorical Data
 mfull <- lm(price ~ ., data=listings_numerical)
-
+summary(mfull)
+# cannot run 
 ```
 
 
 # Using the .to includes all non-response variables in the data frame
+
+
+#### additional code
+
+```{r}
+# data_cleaned <- data_raw %>%  #from albert
+#   mutate(
+#     price = str_replace_all(price, "\\$", ""),
+#     price = str_replace_all(price, ",", ""),
+#     price = as.numeric(price)
+#     )
+#change all factor to numerical in listings_numerical 
+#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
+```
+
+```{r}
+
+# listings_numerical_cleaned <- listings_numerical %>%
+#   mutate(
+#     price = str_replace_all(price, "\\$", ""),
+#     price = str_replace_all(price, ",", ""),
+#      price = as.numeric(price),
+#     weekly_price= as.numeric(weekly_price),
+#     monthly_price = as.numeric(monthly_price),
+#     security_deposit = as.numeric(security_deposit),
+#     cleaning_fee  = as.numeric(cleaning_fee ),
+#     extra_people = as.numeric(extra_people),
+#     zipcode = as.numeric(zipcode),
+#     host_response_rate = as.numeric(host_response_rate)
+#     )
+  
+```
