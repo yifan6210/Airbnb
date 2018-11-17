@@ -23,7 +23,7 @@ select(-(cancellation_policy))%>%
 
 ```{r}
 listings_amenities <- listings %>% # contains only amenities 
-select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
+select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities, price) %>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
          tv = str_detect(amenities,"TV"),
@@ -107,12 +107,62 @@ ggplot(listings, aes(x=room_type, y =price_per_p))  +
 
 ```
 
+
+--------------------------------
+# getting rid of N/As
 ```{r}
 # Run .null on all numerical and Catergorical Data
 mfull <- lm(price ~ ., data=listings_numerical)
 summary(mfull)
-# cannot run 
+# cannot run # mean imuputation 
+# MICE 
 ```
+
+```{r}
+colSums(is.na(listings_numerical)) # counting how many N/As in each column
+```
+Zipcode: 3983; bathrooms: 4, bedrooms:16; beds: 21; square_feet:19980; weekly_price: 19557; monthly_price: 19556; security_deposit: 12360
+cleaning_fee: 11737, review_score_rating: 8259, review_scores_accuracy: 8257, review_scores_cleanliness: 8256,  review_scores_checkin:8267
+review_scores_communication: 8259, review_scores_location:8281, review_scores_value: 8282, reviews_per_month:7949 
+
+Because almost all entries in this dataset do not have square_feet, weekly_price, monthly_price, defintely dropping those three variables.
+
+
+```{r}
+listings_numerical_clean <- listings_numerical%>%
+  select(-c(square_feet, weekly_price,monthly_price))
+```
+
+For the sake of testing and seeing an R value, I'm dropping everything with N/A
+
+```{r}
+listings_numerical_test <- listings_numerical%>%
+  select(-c(square_feet, weekly_price,monthly_price,zipcode,security_deposit,
+cleaning_fee, review_scores_rating, review_scores_accuracy, review_scores_cleanliness, review_scores_checkin,
+review_scores_communication, review_scores_location, review_scores_value, reviews_per_month))
+
+mfull_test <- lm(price_per_p ~ ., data=listings_numerical_test) # takes pretty much forever to run 
+summary(mfull_test)
+```
+
+Another look at the NAs in the categorical datas
+
+```{r}
+colSums(is.na(listings_amenities)) # everybody else is fine except square_feet
+```
+#regression 
+
+```{r}
+listings_amenities_test <- listings_amenities %>%
+  select(-c(amenities,accommodates, price))
+
+mamenities_test <- lm(price_per_p ~ ., data = listings_numerical_test)
+summary(mamenities_test) # I don't even want to comment on the results
+```
+
+
+
+
 
 
 # Using the .to includes all non-response variables in the data frame
