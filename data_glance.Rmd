@@ -9,6 +9,7 @@ library(tidyverse)
 library(readxl)
 library(stringr)
 library(dplyr)
+library(mice)
 ```
 
 ```{r}
@@ -127,7 +128,14 @@ review_scores_communication: 8259, review_scores_location:8281, review_scores_va
 
 Because almost all entries in this dataset do not have square_feet, weekly_price, monthly_price, defintely dropping those three variables.
 
+-----------------------
+# MICE package 
 
+```{r}
+mdpattern(listings_numerical)
+```
+
+------------------------
 ```{r}
 listings_numerical_clean <- listings_numerical%>%
   select(-c(square_feet, weekly_price,monthly_price))
