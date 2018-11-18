@@ -116,7 +116,6 @@ ggplot(listings, aes(x=room_type, y =price_per_p))  +
 mfull <- lm(price ~ ., data=listings_numerical)
 summary(mfull)
 # cannot run # mean imuputation 
-# MICE 
 ```
 
 ```{r}
@@ -131,27 +130,31 @@ Because almost all entries in this dataset do not have square_feet, weekly_price
 -----------------------
 # MICE package 
 
-```{r}
-mdpattern(listings_numerical)
-```
 
 ------------------------
 ```{r}
 listings_numerical_clean <- listings_numerical%>%
-  select(-c(square_feet, weekly_price,monthly_price))
-```
-
-For the sake of testing and seeing an R value, I'm dropping everything with N/A
-
-```{r}
-listings_numerical_test <- listings_numerical%>%
   select(-c(square_feet, weekly_price,monthly_price,zipcode,security_deposit,
 cleaning_fee, review_scores_rating, review_scores_accuracy, review_scores_cleanliness, review_scores_checkin,
-review_scores_communication, review_scores_location, review_scores_value, reviews_per_month))
+review_scores_communication, review_scores_location, review_scores_value, reviews_per_month, accommodates, latitude, longitude)) #I'm dropping everything （also dropping longtitude, latitude for the ease of regression for now) with N/A, except
+#bathrooms, bedrooms, and beds
 
-mfull_test <- lm(price_per_p ~ ., data=listings_numerical_test) # takes pretty much forever to run 
-summary(mfull_test)
 ```
+
+```{r}
+tempData <- mice(listings_numerical_clean,m=5,maxit=50,meth='polyreg',seed=6210) #citation, the link is at the end of the document # hasn't work yet  
+summary(tempData)
+```
+
+
+```{r}
+listings_numerical_clean_head <- listings_numerical_clean %>%
+  head(5000)
+
+numerical_clean_head <- lm(price_per_p ~ .,data = listings_numerical_clean_head )
+summary(numerical_clean_head)
+```
+
 
 Another look at the NAs in the categorical datas
 
@@ -173,8 +176,10 @@ summary(mamenities_test) # I don't even want to comment on the results
 
 
 
-# Using the .to includes all non-response variables in the data frame
+# Using the .to includes all non-response variables in the data frame: 
+#Citation
 
+citation for mice: https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
 
 #### additional code
 
