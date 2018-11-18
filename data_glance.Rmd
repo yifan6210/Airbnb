@@ -130,8 +130,6 @@ Because almost all entries in this dataset do not have square_feet, weekly_price
 -----------------------
 # MICE package 
 
-
-------------------------
 ```{r}
 listings_numerical_clean <- listings_numerical%>%
   select(-c(square_feet, weekly_price,monthly_price,zipcode,security_deposit,
@@ -155,7 +153,7 @@ numerical_clean_head <- lm(price_per_p ~ .,data = listings_numerical_clean_head 
 summary(numerical_clean_head)
 ```
 
-
+-----------------
 Another look at the NAs in the categorical datas
 
 ```{r}
