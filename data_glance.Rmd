@@ -127,30 +127,35 @@ review_scores_communication: 8259, review_scores_location:8281, review_scores_va
 
 Because almost all entries in this dataset do not have square_feet, weekly_price, monthly_price, defintely dropping those three variables.
 
+# splitting for two models, with and without reviews?
+
 -----------------------
 # MICE package 
 
 ```{r}
 listings_numerical_clean <- listings_numerical%>%
-  select(-c(square_feet, weekly_price,monthly_price,zipcode,security_deposit,
+  select(-c(price,square_feet, weekly_price,monthly_price,zipcode,security_deposit,
 cleaning_fee, review_scores_rating, review_scores_accuracy, review_scores_cleanliness, review_scores_checkin,
 review_scores_communication, review_scores_location, review_scores_value, reviews_per_month, accommodates, latitude, longitude)) #I'm dropping everything （also dropping longtitude, latitude for the ease of regression for now) with N/A, except
 #bathrooms, bedrooms, and beds
 
 ```
-
+# filling in missing bathrooms, bedrooms and beds
 ```{r}
-tempData <- mice(listings_numerical_clean,m=5,maxit=50,meth='polyreg',seed=6210) #citation, the link is at the end of the document # hasn't work yet  
+tempData <- mice(listings_numerical_clean,m=5,maxit=5,meth='pmm',seed=6210) #citation
 summary(tempData)
+completed_listings_numerical_clean <- complete(tempData,1)
+colSums(is.na(completed_listings_numerical_clean))
 ```
 
 
 ```{r}
-listings_numerical_clean_head <- listings_numerical_clean %>%
+listings_numerical_clean_head <- completed_listings_numerical_clean %>%
   head(5000)
 
 numerical_clean_head <- lm(price_per_p ~ .,data = listings_numerical_clean_head )
 summary(numerical_clean_head)
+# PI, CI
 ```
 
 -----------------
@@ -165,8 +170,8 @@ colSums(is.na(listings_amenities)) # everybody else is fine except square_feet
 listings_amenities_test <- listings_amenities %>%
   select(-c(amenities,accommodates, price))
 
-mamenities_test <- lm(price_per_p ~ ., data = listings_numerical_test)
-summary(mamenities_test) # I don't even want to comment on the results
+mamenities_test <- lm(price_per_p ~ ., data = listings_amenities_test)
+summary(mamenities_test) # small results
 ```
 
 
