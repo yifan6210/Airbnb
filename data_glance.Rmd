@@ -174,9 +174,73 @@ mamenities_test <- lm(price_per_p ~ ., data = listings_amenities_test)
 summary(mamenities_test) # small results
 ```
 
+————————————————————————————
+# Chaoyang
 
+```{r}
+listings_chaoyang_amenities <- listings_amenities_test %>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(-neighbourhood_cleansed)
 
+mod_chaoyang <- lm(price_per_p ~ ., data = listings_chaoyang_amenities)
+summary(mod_chaoyang)
+```
 
+```{r}
+names(listings_chaoyang)
+listings_chaoyang <- listings%>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>% # changed host_response_rate into numeric. 
+  
+  mice(m=5,maxit=5,meth='pmm',seed=610) # fill in missing N/A bathrooms, bedrooms and beds
+
+listings_chaoyang_numericals <- complete(listings_chaoyang,1)
+colSums(is.na(listings_chaoyang_numericals)) # check for zeros 
+
+mod_chaoyang2 <- lm(price_per_p ~ ., data = listings_chaoyang_numericals)
+summary(mod_chaoyang2)
+```
+
+cor
+
+```{r}
+cor(listings_chaoyang_numericals)
+```
+after running correlation, took out availability_60 and host_listings_count
+
+```{r}
+completed_listings_chaoyang <-listings %>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+  select(-amenities)
+  
+```
+
+```{r}
+mod_chaoyang_full <- lm(price_per_p ~ ., data = completed_listings_chaoyang)
+summary(mod_chaoyang_full)
+```
+
+_________________
+The model for chaoyang keeping all significant variables. # should we do this?
+
+```{r}
+
+```
 
 
 # Using the .to includes all non-response variables in the data frame: 
