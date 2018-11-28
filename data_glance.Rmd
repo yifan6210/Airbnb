@@ -278,7 +278,22 @@ summary(mod_central_distrcits)
 ```
 
 
-# Using the .to includes all non-response variables in the data frame: 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Citation
 
 citation for mice: https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
