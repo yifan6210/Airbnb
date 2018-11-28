@@ -190,29 +190,23 @@ summary(mod_chaoyang)
 names(listings_chaoyang)
 listings_chaoyang <- listings%>%
   filter(neighbourhood_cleansed == "Chaoyang")%>%
-  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p)%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p)%>% # adding review_scores does not actually raise r or reduce standard error
   mutate(host_response_rate = as.numeric(host_response_rate))%>% # changed host_response_rate into numeric. 
-  
   mice(m=5,maxit=5,meth='pmm',seed=610) # fill in missing N/A bathrooms, bedrooms and beds
 
-listings_chaoyang_numericals <- complete(listings_chaoyang,1)
-colSums(is.na(listings_chaoyang_numericals)) # check for zeros 
+listings_chaoyang <- complete(listings_chaoyang,1)
+colSums(is.na(listings_chaoyang)) # check for zeros 
 
-mod_chaoyang2 <- lm(price_per_p ~ ., data = listings_chaoyang_numericals)
+mod_chaoyang2 <- lm(price_per_p ~ ., data = listings_chaoyang)
 summary(mod_chaoyang2)
 ```
 
-cor
-
-```{r}
-cor(listings_chaoyang_numericals)
-```
-after running correlation, took out availability_60 and host_listings_count
+cor: after running correlation only on numericals, took out availability_60 and host_listings_count
 
 ```{r}
 completed_listings_chaoyang <-listings %>%
   filter(neighbourhood_cleansed == "Chaoyang")%>%
-  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
   mutate(host_response_rate = as.numeric(host_response_rate))%>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
