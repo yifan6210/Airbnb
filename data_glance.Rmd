@@ -328,8 +328,8 @@ resid(mod_chaoyang_full)
 sum(residuals(mod_chaoyang_full)^2) 
 mean(residuals(mod_chaoyang_full))
 #CI,PI
-#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="confidence")
-#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
+predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="confidence")
+predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
 
 predict(mod_chaoyang_full, level = 0.95, interval="confidence")
 predict(mod_chaoyang_full, level = 0.95, interval="prediction")
