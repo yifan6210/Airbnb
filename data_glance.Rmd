@@ -5,26 +5,27 @@ output: html_document
 ---
 
 ```{r}
-#install.packages("tidyverse")
 library(tidyverse)
+library(readxl)
+library(stringr)
 library(dplyr)
-install.packages("varhandle")
-require(varhandle)
+install.packages("mice")
+library(mice)
 ```
 
 ```{r}
-library(readxl) ## reading the excel 
-library(stringr)
-listings <- read_excel("Clb.xlsx", skip = 1) #from albert 
-listings_numerical <- read_excel("Clb_numerical.xlsx", skip=1)
-
+listings <- read_excel("Clb.xlsx", skip = 1)%>%
+  mutate(price_per_p = price/accommodates) #all variables, 97. from albert + mutated price 
+listings_numerical <- read_excel("Clb_numerical.xlsx", skip=1) %>%
+select(-(cancellation_policy))%>%
+  mutate(price_per_p = price/accommodates)# all numerical variables, 35 
 ```
 
 ##### data cleaning 
-###### getting park out of amenities
+
 ```{r}
-data_raw <- listings %>%
-select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,minimum_nights,instant_bookable, amenities, price) %>%
+listings_amenities <- listings %>% # contains only amenities 
+select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities, price) %>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
          tv = str_detect(amenities,"TV"),
@@ -36,8 +37,10 @@ select(neighbourhood_cleansed,room_type,accommodates,square_feet,extra_people,mi
          dryer = str_detect(amenities,"Dryer"),
          elevator = str_detect(amenities,"Elavator"),
          heat = str_detect(amenities,"Heating"),
-         workspace = str_detect(amenities,"Laptop friendly workspace")) #in caps or not  
+         workspace = str_detect(amenities,"Laptop friendly workspace"),
+         price_per_p = price/accommodates)  
   
+<<<<<<< HEAD
 
 #one hot coding
 #for loop val in c("TV....")
@@ -77,34 +80,30 @@ data_cleaned <- data_raw %>%  #from albert
 ```{r}
 data_cleaned <- data_cleaned %>%
   mutate(price_per_p = price/accommodates)
+=======
+>>>>>>> 384033d0d35d1b9edbf21998f52438136284db48
 ```
 
 ##### regression models with all
 
 ```{r}
-cor_data <-  data_cleaned %>% 
-  select(accommodates,extra_people,minimum_nights,price_per_p) #only on numerical
-cor(cor_data)
+#only on numerical
+cor_data <- listings_numerical %>%
+  select(-c(latitude, longitude,host_response_rate))# get rid of chr
+# need to get rid of N/A, albert?
+
+
+cor_test <- listings_numerical%>%
+  select(price_per_p,extra_people,bedrooms,host_listings_count,bathrooms, beds, weekly_price, number_of_reviews,security_deposit,minimum_nights)
+cor(cor_test)
 ```
-
-
-```{r}
-mod1 <- lm(price_per_p~ instant_bookable + minimum_nights + room_type+ neighbourhood_cleansed + extra_people, data_cleaned) #when square feet added, no one is significant lol
-#Jeez.... that's bad
-summary(mod1)
-```
-
-```{r}
-mod2 <- lm(price_per_p ~ instant_bookable + room_type+ neighbourhood_cleansed + extra_people, data_cleaned)
-summary(mod2)
-```
-
 --------------------------------------------------------------------------------------
 # Using the . in the formula interface includes all non-response variables in the data frame.
 
+# interpretation 
 ```{r}
 # mean price of the accomodation by district
-MeanP_by_district <- data_cleaned %>%
+MeanP_by_district <- listings %>%
   group_by(neighbourhood_cleansed) %>%
   summarise(price_per_p = mean(price_per_p))
 
@@ -113,45 +112,282 @@ MeanP_by_district <- data_cleaned %>%
 ggplot(MeanP_by_district,
        mapping = aes(x = neighbourhood_cleansed, y = price_per_p)) + geom_col() +
        coord_flip() 
+#suburbs have the highest average pricing 
 
 #Boxplot of the median price for each district
 
-ggplot(data_cleaned, aes(x = neighbourhood_cleansed, y = price_per_p))  +
+ggplot(listings, aes(x = neighbourhood_cleansed, y = price_per_p))  +
   geom_boxplot() +
   scale_y_log10() + coord_flip()
+# The range of price for the center districts are most stable, in terms of variability.
+# Where as, this is not the case for the suburbs, despite the fact that they have similar median.
+# According to the graph, we realize that it is important to know what varaibles predict the 
+# price.
   
 ```
 
 ```{r}
 #mutate number of listings sorted by area
- neighbourhood_data<-data_cleaned %>% 
+ neighbourhood_data<-listings %>% 
   group_by(neighbourhood_cleansed) %>% 
-  summarize(number_listings=n()) 
+  summarize(number_listings=n())
 
 ggplot(neighbourhood_data, aes(x = neighbourhood_cleansed, y = number_listings))  +
   geom_col() + coord_flip()
 ```
-
+# top four most popular districts: ChaoYang, DongCheng, Haidian, Xichen.
 
 #### albert plot
 ```{r}
-ggplot(data_cleaned, aes(x=price_per_p)) +
-  geom_histogram() +
-  scale_x_log10()
+ggplot(listings, aes(x=price_per_p)) +
+  geom_histogram()+
+  scale_x_log10() # if not looking at the outliers, almost normal distribution
+# center around 200-300 rmb per person per night 
 
-ggplot(data_cleaned, aes(x=room_type, y =price_per_p))  + 
+ggplot(listings, aes(x=room_type, y =price_per_p))  + 
   geom_boxplot() + 
   scale_y_log10()
+# entire home/apt is more expensive than private room then shared room, but not by a lot
 
-lm(price_per_p~room_type, data = data_cleaned) %>% summary()
 ```
 
+
+--------------------------------
+# getting rid of N/As
 ```{r}
 # Run .null on all numerical and Catergorical Data
 mfull <- lm(price ~ ., data=listings_numerical)
 summary(mfull)
+<<<<<<< HEAD
+=======
+# cannot run # mean imuputation 
+```
 
+```{r}
+colSums(is.na(listings_numerical)) # counting how many N/As in each column
+```
+Zipcode: 3983; bathrooms: 4, bedrooms:16; beds: 21; square_feet:19980; weekly_price: 19557; monthly_price: 19556; security_deposit: 12360
+cleaning_fee: 11737, review_score_rating: 8259, review_scores_accuracy: 8257, review_scores_cleanliness: 8256,  review_scores_checkin:8267
+review_scores_communication: 8259, review_scores_location:8281, review_scores_value: 8282, reviews_per_month:7949 
+
+Because almost all entries in this dataset do not have square_feet, weekly_price, monthly_price, defintely dropping those three variables.
+
+# splitting for two models, with and without reviews?
+
+-----------------------
+# MICE package 
+
+```{r}
+listings_numerical_clean <- listings_numerical%>%
+  select(-c(price,square_feet, weekly_price,monthly_price,zipcode,security_deposit,
+cleaning_fee, review_scores_rating, review_scores_accuracy, review_scores_cleanliness, review_scores_checkin,
+review_scores_communication, review_scores_location, review_scores_value, reviews_per_month, accommodates, latitude, longitude)) #I'm dropping everything （also dropping longtitude, latitude for the ease of regression for now) with N/A, except
+#bathrooms, bedrooms, and beds
+
+```
+# filling in missing bathrooms, bedrooms and beds
+```{r}
+tempData <- mice(listings_numerical_clean,m=5,maxit=5,meth='pmm',seed=6210) #citation
+summary(tempData)
+completed_listings_numerical_clean <- complete(tempData,1)
+colSums(is.na(completed_listings_numerical_clean))
 ```
 
 
-# Using the .to includes all non-response variables in the data frame
+```{r}
+listings_numerical_clean_head <- completed_listings_numerical_clean %>%
+  head(5000)
+
+numerical_clean_head <- lm(price_per_p ~ .,data = listings_numerical_clean_head )
+summary(numerical_clean_head)
+# PI, CI
+```
+
+-----------------
+Another look at the NAs in the categorical datas
+
+```{r}
+colSums(is.na(listings_amenities)) # everybody else is fine except square_feet
+```
+#regression 
+
+```{r}
+listings_amenities_test <- listings_amenities %>%
+  select(-c(amenities,accommodates, price))
+
+mamenities_test <- lm(price_per_p ~ ., data = listings_amenities_test)
+summary(mamenities_test) # small results
+```
+
+————————————————————————————
+# Chaoyang
+
+```{r}
+listings_chaoyang_amenities <- listings_amenities_test %>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(-neighbourhood_cleansed)
+
+mod_chaoyang <- lm(price_per_p ~ ., data = listings_chaoyang_amenities)
+summary(mod_chaoyang)
+```
+
+```{r}
+#names(listings_chaoyang)
+listings_chaoyang <- listings%>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p)%>% # adding review_scores does not actually raise r or reduce standard error
+  mutate(host_response_rate = as.numeric(host_response_rate))%>% # changed host_response_rate into numeric. 
+  mice(m=5,maxit=5,meth='pmm',seed=610) # fill in missing N/A bathrooms, bedrooms and beds
+
+listings_chaoyang <- complete(listings_chaoyang,1)
+colSums(is.na(listings_chaoyang)) # check for zeros 
+
+mod_chaoyang2 <- lm(price_per_p ~ ., data = listings_chaoyang)
+summary(mod_chaoyang2)
+```
+
+cor: after running correlation only on numericals, took out availability_60 and host_listings_count
+
+```{r}
+completed_listings_chaoyang <-listings %>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+  select(-amenities) %>%
+  mice(m=5,maxit=5,meth='pmm',seed=620) # fill in missing N/A bathrooms, bedrooms and beds
+
+completed_listings_chaoyang <- complete(completed_listings_chaoyang,1)
+colSums(is.na(completed_listings_chaoyang))
+```
+
+```{r}
+mod_chaoyang_full <- lm(price_per_p ~ ., data = completed_listings_chaoyang)
+summary(mod_chaoyang_full)
+```
+
+_________________
+The model for chaoyang keeping all significant variables. # should we do this for the equation?
+
+```{r}
+>>>>>>> 384033d0d35d1b9edbf21998f52438136284db48
+
+```
+
+________________
+central districts 
+
+```{r}
+central_distrcits <- listings %>%
+  filter (neighbourhood_cleansed == "Chaoyang"| neighbourhood_cleansed == "Dongcheng"| neighbourhood_cleansed == "Haidian"| neighbourhood_cleansed == "Xicheng" )%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+  select(-amenities)%>%
+  mice(m=5,maxit=5,meth='pmm',seed=621)
+
+central_distrcits <- complete(central_distrcits,1)
+colSums(is.na(central_distrcits))
+```
+
+```{r}
+mod_central_distrcits <- lm(price_per_p ~ ., data = central_distrcits)
+summary(mod_central_distrcits)
+```
+
+
+
+
+________________
+Individual Residual and MSE for ChaoYang Model, CI,PI
+```{r}
+#MSE
+resid(mod_chaoyang_full)
+sum(residuals(mod_chaoyang_full)^2) 
+mean(residuals(mod_chaoyang_full))
+#CI,PI
+#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="confidence")
+#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
+
+predict(mod_chaoyang_full, level = 0.95, interval="confidence")
+predict(mod_chaoyang_full, level = 0.95, interval="prediction")
+
+
+```
+
+```{r}
+#Assessing Conditions
+plot(mod_chaoyang_full, which=c(1,2))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Citation
+
+citation for mice: https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
+for'polyreg':https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-packages-imputing-missing-values/
+
+
+#### additional code
+
+```{r}
+# data_cleaned <- data_raw %>%  #from albert
+#   mutate(
+#     price = str_replace_all(price, "\\$", ""),
+#     price = str_replace_all(price, ",", ""),
+#     price = as.numeric(price)
+#     )
+#change all factor to numerical in listings_numerical 
+#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
+```
+
+```{r}
+
+# listings_numerical_cleaned <- listings_numerical %>%
+#   mutate(
+#     price = str_replace_all(price, "\\$", ""),
+#     price = str_replace_all(price, ",", ""),
+#      price = as.numeric(price),
+#     weekly_price= as.numeric(weekly_price),
+#     monthly_price = as.numeric(monthly_price),
+#     security_deposit = as.numeric(security_deposit),
+#     cleaning_fee  = as.numeric(cleaning_fee ),
+#     extra_people = as.numeric(extra_people),
+#     zipcode = as.numeric(zipcode),
+#     host_response_rate = as.numeric(host_response_rate)
+#     )
+  
+```
