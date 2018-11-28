@@ -236,10 +236,18 @@ summary(mod_chaoyang_full)
 ```
 
 _________________
-The model for chaoyang keeping all significant variables. # should we do this?
+The model for chaoyang keeping all significant variables. # should we do this for the equation?
 
 ```{r}
 
+```
+
+________________
+central districts 
+
+```{r}
+central_distrcits <- listings %>%
+  filter (neighbourhood_cleansed == "Chaoyang"| neighbourhood_cleansed == "Dongcheng"| neighbourhood_cleansed == "Haidian"| neighbourhood_cleansed == "Xicheng" )
 ```
 
 
