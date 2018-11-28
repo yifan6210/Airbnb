@@ -259,8 +259,8 @@ select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,m
          elevator = str_detect(amenities,"Elavator"),
          heat = str_detect(amenities,"Heating"),
          workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
-  select(-amenities)%>%
-  mice(m=5,maxit=5,meth='pmm',seed=621)
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
 
 central_distrcits <- complete(central_distrcits,1)
 colSums(is.na(central_distrcits))
@@ -271,8 +271,34 @@ mod_central_distrcits <- lm(price_per_p ~ ., data = central_distrcits)
 summary(mod_central_distrcits)
 ```
 
+```{r}
+suburb <- listings %>%
+  filter (neighbourhood_cleansed == "Huairou"| neighbourhood_cleansed == "Mentougou"| neighbourhood_cleansed == "Yanqing")%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,review_scores_rating,review_scores_cleanliness,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
 
+suburb <- complete(suburb,1)
+colSums(is.na(suburb))
+```
 
+```{r}
+mod_suburb <- lm(price_per_p ~ ., data = suburb)
+summary(mod_suburb)
+```
 
 
 
