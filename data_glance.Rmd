@@ -347,21 +347,31 @@ summary(mod_suburb)
 ```
 
 ________________
-Individual Residual and MSE for ChaoYang Model, CI,PI
+Individual Residual and MSE, CI,PI and Conditions for ChaoYang Model, 
 ```{r}
-#MSE
-resid(mod_chaoyang_full)
-sum(residuals(mod_chaoyang_full)^2) 
-mean(residuals(mod_chaoyang_full))
+
+#Random Selecting Sample 
+ChaoYang_Sample<-sample_n(completed_listings_chaoyang, 8092)
+#Sample Model for ChaoYang District 
+mod_chaoyang_Sample <- lm(price_per_p ~ ., data =  
+ChaoYang_Sample)
+
+```
+
+```{r}
+#Mean and median residual of the first 1000 listings in ChaoYang
+#abs(resid(mod_chaoyang_Sample))
+mean(abs(resid(mod_chaoyang_Sample)))
+median(abs(resid(mod_chaoyang_Sample)))
+```
+CI PI for ChaoYang
+```{r}
 #CI,PI
 #predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="confidence")
 #predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
 
 predict(mod_chaoyang_full, level = 0.95, interval="confidence")
 predict(mod_chaoyang_full, level = 0.95, interval="prediction")
-
-
-
 ```
 
 ```{r}
