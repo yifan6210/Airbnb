@@ -347,20 +347,19 @@ summary(mod_suburb)
 ```
 
 ________________
-Individual Residual and MSE, CI,PI and Conditions for ChaoYang Model, 
+Individual Residual and MSE, CI,PI and onditions for ChaoYang Model, 
 ```{r}
 
 #Random Selecting Sample 
-ChaoYang_Sample<-sample_n(completed_listings_chaoyang, 8092)
+ChaoYang_Sample<-sample_n(completed_listings_chaoyang, 1000)
 #Sample Model for ChaoYang District 
 mod_chaoyang_Sample <- lm(price_per_p ~ ., data =  
 ChaoYang_Sample)
-
 ```
 
 ```{r}
 #Mean and median residual of the first 1000 listings in ChaoYang
-#abs(resid(mod_chaoyang_Sample))
+
 mean(abs(resid(mod_chaoyang_Sample)))
 median(abs(resid(mod_chaoyang_Sample)))
 ```
@@ -374,29 +373,48 @@ predict(mod_chaoyang_full, level = 0.95, interval="confidence")
 predict(mod_chaoyang_full, level = 0.95, interval="prediction")
 ```
 
-```{r}
-#Assessing Conditions
-plot(mod_chaoyang_full, which=c(1,2))
-```
 
 ________________
 Individual Residual and MSE for Central District Model, CI,PI
 ```{r}
-#MSE
-resid(central_distrcits)
-sum(residuals(central_distrcits)^2) 
-mean(residuals(central_distrcits))
-#CI,PI
-#predict(central_distrcits, newdata=data.frame(bedrooms=2), interval="confidence")
-#predict(central_distrcits, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
+#Random Selecting Sample 
+central_distrcits_Sample<-sample_n(central_distrcits, 1000)
+#Sample Model for ChaoYang District 
+mod_central_distrcits_Sample <- lm(price_per_p ~ ., data =central_distrcits_Sample)
 
-predict(central_distrcits, level = 0.95, interval="confidence")
-predict(central_distrcits, level = 0.95, interval="prediction")
-
-#Resid Plot
+#Mean and median residual
+#abs(resid(mod_chaoyang_Sample))
+mean(abs(resid(mod_central_distrcits_Sample)))
+median(abs(resid(mod_central_distrcits_Sample)))
 
 ```
 
+________________
+Individual Residual and MSE for Suburb Model, CI,PI
+
+```{r}
+#Random Selecting Sample 
+suburb_Sample<-sample_n(central_distrcits, 1000)
+#Sample Model for ChaoYang District 
+mod_suburb_Sample <- lm(price_per_p ~ ., data =suburb_Sample)
+
+#Mean and median residual
+#abs(resid(mod_chaoyang_Sample))
+mean(abs(resid(mod_suburb_Sample)))
+median(abs(resid(mod_suburb_Sample)))
+
+```
+
+________________
+Assessing Conditions for all model
+
+```{r}
+#Assessing Conditions
+plot(mod_chaoyang_full, which=c(1,2))
+plot(mod_central_distrcits, which=c(1,2))
+plot(mod_suburb, which=c(1,2))
+
+```
 
 
 
