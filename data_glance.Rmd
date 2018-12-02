@@ -10,6 +10,7 @@ library(readxl)
 library(stringr)
 library(dplyr)
 library(mice)
+require(leaps)
 ```
 
 ```{r}
@@ -232,11 +233,14 @@ mod_chaoyang_full <- lm(price_per_p ~ ., data = completed_listings_chaoyang)
 summary(mod_chaoyang_full)
 ```
 
-_________________
-The model for chaoyang keeping all significant variables. # should we do this for the equation?
+```{r}
+stepwise_chaoyang <- regsubsets(price_per_p~ ., data = completed_listings_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
+with(summary(stepwise_chaoyang), data.frame(cp, outmat)) #according to smallest cp, pick 18
+```
 
 ```{r}
-
+mod_chaoyang_18 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+guests_included+extra_people+availability_30+availability_90 +number_of_reviews+review_scores_rating+review_scores_cleanliness+room_type+parking+gym+essentials+washer+dryer+heat, data = completed_listings_chaoyang)
+summary(mod_chaoyang_18)
 ```
 
 ________________
@@ -272,9 +276,20 @@ summary(mod_central_distrcits)
 ```
 
 ```{r}
+stepwise_central <- regsubsets(price_per_p~ ., data = central_distrcits, nbest = 1, nvmax = 20, method = "seqrep")
+with(summary(stepwise_central), data.frame(cp, outmat)) #according to smallest cp, pick 14
+```
+
+```{r}
+mod_central_14 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_30+number_of_reviews+room_type+parking+ac+essentials+washer+dryer, data = central_distrcits)
+summary(mod_central_14) 
+```
+
+
+```{r}
 suburb <- listings %>%
   filter (neighbourhood_cleansed == "Huairou"| neighbourhood_cleansed == "Mentougou"| neighbourhood_cleansed == "Yanqing")%>%
-select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,review_scores_rating,review_scores_cleanliness,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
   mutate(host_response_rate = as.numeric(host_response_rate))%>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
@@ -298,10 +313,18 @@ colSums(is.na(suburb))
 ```{r}
 mod_suburb <- lm(price_per_p ~ ., data = suburb)
 summary(mod_suburb)
+
 ```
 
+```{r}
+stepwise_suburb <- regsubsets(price_per_p~ ., data = suburb, nbest = 1, nvmax = 15, method = "seqrep")
+with(summary(stepwise_suburb), data.frame(cp, outmat))
+```
 
-
+```{r}
+mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+availability_60+host_listings_count+gym+essentials+washer+ heat+workspace, data = suburb)
+summary(mod_suburb_15)
+```
 
 
 
