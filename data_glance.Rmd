@@ -427,6 +427,7 @@ plot(mod_suburb, which=c(1,2))
 
 
 
+
 #Citation
 
 citation for mice: https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
