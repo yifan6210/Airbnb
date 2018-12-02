@@ -41,8 +41,6 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
          workspace = str_detect(amenities,"Laptop friendly workspace"),
          price_per_p = price/accommodates)  
   
-<<<<<<< HEAD
-
 #one hot coding
 #for loop val in c("TV....")
 ```
@@ -159,8 +157,7 @@ ggplot(listings, aes(x=room_type, y =price_per_p))  +
 # Run .null on all numerical and Catergorical Data
 mfull <- lm(price ~ ., data=listings_numerical)
 summary(mfull)
-<<<<<<< HEAD
-=======
+
 # cannot run # mean imuputation 
 ```
 
@@ -279,13 +276,9 @@ summary(mod_chaoyang_full)
 ```
 
 ```{r}
-<<<<<<< HEAD
 stepwise_chaoyang <- regsubsets(price_per_p~ ., data = completed_listings_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
 with(summary(stepwise_chaoyang), data.frame(cp, outmat)) #according to smallest cp, pick 18
 ```
-=======
->>>>>>> 384033d0d35d1b9edbf21998f52438136284db48
->>>>>>> 0acebc57feebc0a77e71b5bbbe5eec2cf9d5ef1d
 
 ```{r}
 mod_chaoyang_18 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+guests_included+extra_people+availability_30+availability_90 +number_of_reviews+review_scores_rating+review_scores_cleanliness+room_type+parking+gym+essentials+washer+dryer+heat, data = completed_listings_chaoyang)
@@ -362,16 +355,22 @@ colSums(is.na(suburb))
 ```{r}
 mod_suburb <- lm(price_per_p ~ ., data = suburb)
 summary(mod_suburb)
-
-<<<<<<< HEAD
 ```
 
 ```{r}
 stepwise_suburb <- regsubsets(price_per_p~ ., data = suburb, nbest = 1, nvmax = 15, method = "seqrep")
 with(summary(stepwise_suburb), data.frame(cp, outmat))
-=======
+```
+
+```{r}
+mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+availability_60+host_listings_count+gym+essentials+washer+ heat+workspace, data = suburb)
+summary(mod_suburb_15)
+```
+
+
 ________________
-Individual Residual and MSE, CI,PI and onditions for ChaoYang Model, 
+Individual Residual and MSE, CI,PI and onditions for ChaoYang Model
+
 ```{r}
 
 #Random Selecting Sample 
@@ -438,12 +437,6 @@ plot(mod_chaoyang_full, which=c(1,2))
 plot(mod_central_distrcits, which=c(1,2))
 plot(mod_suburb, which=c(1,2))
 
->>>>>>> 0acebc57feebc0a77e71b5bbbe5eec2cf9d5ef1d
-```
-
-```{r}
-mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+availability_60+host_listings_count+gym+essentials+washer+ heat+workspace, data = suburb)
-summary(mod_suburb_15)
 ```
 
 
