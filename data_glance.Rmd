@@ -9,7 +9,7 @@ library(tidyverse)
 library(readxl)
 library(stringr)
 library(dplyr)
-install.packages("mice")
+#install.packages("mice")
 library(mice)
 ```
 
@@ -47,7 +47,7 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
 ```
 
 
-###### getting rid of dollar signs
+###### getting rid of dollar signs(merge Problem)
 
 ```{r}
 
@@ -75,7 +75,7 @@ data_cleaned <- data_raw %>%  #from albert
   
 ```
 
-##### price become price/max commodate
+##### price become price/max commodate(problem )
 
 ```{r}
 data_cleaned <- data_cleaned %>%
@@ -347,62 +347,122 @@ summary(mod_suburb)
 ```
 
 ________________
-Individual Residual and MSE, CI,PI and onditions for ChaoYang Model, 
+Absolute mean residual for ChaoYang Model, 
 ```{r}
-
-#Random Selecting Sample 
+means = array(0, 1000)
+for (i in 1:1000) {
+  #Random Selecting Sample 
 ChaoYang_Sample<-sample_n(completed_listings_chaoyang, 1000)
 #Sample Model for ChaoYang District 
 mod_chaoyang_Sample <- lm(price_per_p ~ ., data =  
 ChaoYang_Sample)
+
+#Mean  residual of the first 1000 listings in ChaoYang
+
+means[i]=mean(abs(resid(mod_chaoyang_Sample)))
+# median(abs(resid(mod_chaoyang_Sample)))
+}
+
+meanRes_chaoyang<-data.frame(means=means)
+
+
 ```
 
 ```{r}
-#Mean and median residual of the first 1000 listings in ChaoYang
+median = array(0, 1000)
+for (i in 1:1000) {
+  #Random Selecting Sample 
+ChaoYang_Sample<-sample_n(completed_listings_chaoyang, 1000)
+#Sample Model for ChaoYang District 
+mod_chaoyang_Sample <- lm(price_per_p ~ ., data =  
+ChaoYang_Sample)
 
-mean(abs(resid(mod_chaoyang_Sample)))
-median(abs(resid(mod_chaoyang_Sample)))
+# median residual of the first 1000 listings in ChaoYang
+
+median[i]=median(abs(resid(mod_chaoyang_Sample)))
+}
+
+medianRes_chaoyang <-data.frame(median=median)
 ```
-CI PI for ChaoYang
+
+#Density plot for Mean and Median Resid
 ```{r}
-#CI,PI
-#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="confidence")
-#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
+densityplot(median,medianRes_chaoyang,main="Median Residual Denisty Plot For ChaoYang",
+        xlab="Median Residual",
+      )
 
-predict(mod_chaoyang_full, level = 0.95, interval="confidence")
-predict(mod_chaoyang_full, level = 0.95, interval="prediction")
 ```
+
 
 
 ________________
-Individual Residual and MSE for Central District Model, CI,PI
+Mean Residual for Central District
+
 ```{r}
-#Random Selecting Sample 
+
+means = array(0, 1000)
+for (i in 1:1000) {
 central_distrcits_Sample<-sample_n(central_distrcits, 1000)
+#Sample Model for Central District 
+mod_central_distrcits_Sample <- lm(price_per_p ~ ., data =central_distrcits_Sample)
+
+#Mean Residual
+means[i]=mean(abs(resid(mod_central_distrcits_Sample)))
+
+
+}
+
+meanRes_central<- data.frame(means=means)
+
+
+
+```
+#Median Residual For Central District 
+```{r}
+median = array(0, 1000)
+for (i in 1:1000) {
+  central_distrcits_Sample<-sample_n(central_distrcits, 1000)
 #Sample Model for ChaoYang District 
 mod_central_distrcits_Sample <- lm(price_per_p ~ ., data =central_distrcits_Sample)
 
-#Mean and median residual
-#abs(resid(mod_chaoyang_Sample))
-mean(abs(resid(mod_central_distrcits_Sample)))
-median(abs(resid(mod_central_distrcits_Sample)))
+#Median Residual for central District
+  
+median[i]=median(abs(resid(mod_central_distrcits_Sample))) }
+medianRes_central <- data.frame(median=median)
+```
+
+#Density Plot of Mean and Meidan Residual for Central District
+```{r}
+densityplot(median,medianRes_central,main="Median Residual Denisty Plot For Central",
+        xlab="Median Residual",
+      )
 
 ```
 
 ________________
-Individual Residual and MSE for Suburb Model, CI,PI
+Median Residual for Suburb Model
 
 ```{r}
+median = array(0, 1000)
+for (i in 1:1000) {
 #Random Selecting Sample 
 suburb_Sample<-sample_n(central_distrcits, 1000)
 #Sample Model for ChaoYang District 
 mod_suburb_Sample <- lm(price_per_p ~ ., data =suburb_Sample)
 
-#Mean and median residual
-#abs(resid(mod_chaoyang_Sample))
-mean(abs(resid(mod_suburb_Sample)))
-median(abs(resid(mod_suburb_Sample)))
+#median residual
+median[i]=median(abs(resid(mod_suburb_Sample)))
+}
 
+medianRes_suburb<- data.frame(median=median)
+
+
+```
+# Density Plot for Suburb Model
+```{r}
+densityplot(median,medianRes_suburb,main="Median Residual Denisty Plot For Suburb",
+        xlab="Median Residual",
+      )
 ```
 
 ________________
@@ -436,6 +496,14 @@ for'polyreg':https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-pack
 
 #### additional code
 
+CI PI for ChaoYang
+```{r}
+#CI,PI
+#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2,host_response_rate=20), interval="confidence")
+#predict(mod_chaoyang_full, newdata=data.frame(bedrooms=2), interval="prediction")  #keep saying that host_response_rate not found..... 
+
+```
+
 ```{r}
 # data_cleaned <- data_raw %>%  #from albert
 #   mutate(
@@ -445,6 +513,9 @@ for'polyreg':https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-pack
 #     )
 #change all factor to numerical in listings_numerical 
 #So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
+```
+
+
 ```
 
 ```{r}
