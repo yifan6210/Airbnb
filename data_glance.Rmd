@@ -9,8 +9,13 @@ library(tidyverse)
 library(readxl)
 library(stringr)
 library(dplyr)
+<<<<<<< HEAD
 #install.packages("mice")
+=======
+>>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
 library(mice)
+require(leaps)
+require(mosaic)
 ```
 
 ```{r}
@@ -40,12 +45,11 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
          workspace = str_detect(amenities,"Laptop friendly workspace"),
          price_per_p = price/accommodates)  
   
-<<<<<<< HEAD
-
 #one hot coding
 #for loop val in c("TV....")
 ```
 
+<<<<<<< HEAD
 
 ###### getting rid of dollar signs(merge Problem)
 
@@ -100,6 +104,8 @@ cor(cor_test)
 --------------------------------------------------------------------------------------
 # Using the . in the formula interface includes all non-response variables in the data frame.
 
+=======
+>>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
 # interpretation 
 ```{r}
 # mean price of the accomodation by district
@@ -154,14 +160,6 @@ ggplot(listings, aes(x=room_type, y =price_per_p))  +
 
 --------------------------------
 # getting rid of N/As
-```{r}
-# Run .null on all numerical and Catergorical Data
-mfull <- lm(price ~ ., data=listings_numerical)
-summary(mfull)
-<<<<<<< HEAD
-=======
-# cannot run # mean imuputation 
-```
 
 ```{r}
 colSums(is.na(listings_numerical)) # counting how many N/As in each column
@@ -277,12 +275,14 @@ mod_chaoyang_full <- lm(price_per_p ~ ., data = completed_listings_chaoyang)
 summary(mod_chaoyang_full)
 ```
 
-_________________
-The model for chaoyang keeping all significant variables. # should we do this for the equation?
+```{r}
+stepwise_chaoyang <- regsubsets(price_per_p~ ., data = completed_listings_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
+with(summary(stepwise_chaoyang), data.frame(cp, outmat)) #according to smallest cp, pick 18
+```
 
 ```{r}
->>>>>>> 384033d0d35d1b9edbf21998f52438136284db48
-
+mod_chaoyang_18 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+guests_included+extra_people+availability_30+availability_90 +number_of_reviews+review_scores_rating+review_scores_cleanliness+room_type+parking+gym+essentials+washer+dryer+heat, data = completed_listings_chaoyang)
+summary(mod_chaoyang_18)
 ```
 
 ________________
@@ -318,9 +318,20 @@ summary(mod_central_distrcits)
 ```
 
 ```{r}
+stepwise_central <- regsubsets(price_per_p~ ., data = central_distrcits, nbest = 1, nvmax = 20, method = "seqrep")
+with(summary(stepwise_central), data.frame(cp, outmat)) #according to smallest cp, pick 14
+```
+
+```{r}
+mod_central_14 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_30+number_of_reviews+room_type+parking+ac+essentials+washer+dryer, data = central_distrcits)
+summary(mod_central_14) 
+```
+
+
+```{r}
 suburb <- listings %>%
   filter (neighbourhood_cleansed == "Huairou"| neighbourhood_cleansed == "Mentougou"| neighbourhood_cleansed == "Yanqing")%>%
-select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,review_scores_rating,review_scores_cleanliness,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
   mutate(host_response_rate = as.numeric(host_response_rate))%>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
@@ -346,8 +357,33 @@ mod_suburb <- lm(price_per_p ~ ., data = suburb)
 summary(mod_suburb)
 ```
 
+```{r}
+stepwise_suburb <- regsubsets(price_per_p~ ., data = suburb, nbest = 1, nvmax = 15, method = "seqrep")
+with(summary(stepwise_suburb), data.frame(cp, outmat))
+```
+
+```{r}
+mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+availability_60+host_listings_count+gym+essentials+washer+ heat+workspace, data = suburb)
+summary(mod_suburb_15)
+```
 ________________
+<<<<<<< HEAD
 Absolute mean residual for ChaoYang Model, 
+=======
+Assessing Conditions for models after stepwise:
+
+```{r}
+#Assessing Conditions
+plot(mod_chaoyang_18, which=c(1,2))
+plot(mod_central_14, which=c(1,2))
+plot(mod_suburb_15, which=c(1,2))
+
+```
+
+________________
+Individual Residual and MSE, CI,PI and onditions for ChaoYang Model
+
+>>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
 ```{r}
 means = array(0, 1000)
 for (i in 1:1000) {
@@ -465,19 +501,6 @@ densityplot(median,medianRes_suburb,main="Median Residual Denisty Plot For Subur
       )
 ```
 
-________________
-Assessing Conditions for all model
-
-```{r}
-#Assessing Conditions
-plot(mod_chaoyang_full, which=c(1,2))
-plot(mod_central_distrcits, which=c(1,2))
-plot(mod_suburb, which=c(1,2))
-
-```
-
-
-
 
 
 
@@ -492,6 +515,7 @@ plot(mod_suburb, which=c(1,2))
 
 citation for mice: https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
 for'polyreg':https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-packages-imputing-missing-values/
+<<<<<<< HEAD
 
 
 #### additional code
@@ -535,3 +559,5 @@ CI PI for ChaoYang
 #     )
   
 ```
+=======
+>>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
