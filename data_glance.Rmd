@@ -9,10 +9,6 @@ library(tidyverse)
 library(readxl)
 library(stringr)
 library(dplyr)
-<<<<<<< HEAD
-#install.packages("mice")
-=======
->>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
 library(mice)
 require(leaps)
 require(mosaic)
@@ -49,44 +45,8 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
 #for loop val in c("TV....")
 ```
 
-<<<<<<< HEAD
 
-###### getting rid of dollar signs(merge Problem)
 
-```{r}
-
-data_cleaned <- data_raw %>%  #from albert
-  mutate(
-    price = str_replace_all(price, "\\$", ""),
-    price = str_replace_all(price, ",", ""),
-    price = as.numeric(price)
-    )
-#change all factor to numerical in listings_numerical 
-#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
-#listings_numerical_cleaned <- listings_numerical %>%
- # mutate(
- # price = str_replace_all(price, "\\$", ""),
- # price = str_replace_all(price, ",", ""),
- # price = as.numeric(price),
- #   #weekly_price= as.numeric(weekly_price),
-   # monthly_price = as.numeric(monthly_price),
-    #security_deposit = as.numeric(security_deposit),
-    #cleaning_fee  = as.numeric(cleaning_fee ),
-    #extra_people = as.numeric(extra_people),
-    #zipcode = as.numeric(zipcode),
-   # host_response_rate = as.numeric(host_response_rate)
-    
-  
-```
-
-##### price become price/max commodate(problem )
-
-```{r}
-data_cleaned <- data_cleaned %>%
-  mutate(price_per_p = price/accommodates)
-=======
->>>>>>> 384033d0d35d1b9edbf21998f52438136284db48
-```
 
 ##### regression models with all
 
@@ -104,8 +64,6 @@ cor(cor_test)
 --------------------------------------------------------------------------------------
 # Using the . in the formula interface includes all non-response variables in the data frame.
 
-=======
->>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
 # interpretation 
 ```{r}
 # mean price of the accomodation by district
@@ -367,9 +325,7 @@ mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extr
 summary(mod_suburb_15)
 ```
 ________________
-<<<<<<< HEAD
-Absolute mean residual for ChaoYang Model, 
-=======
+
 Assessing Conditions for models after stepwise:
 
 ```{r}
@@ -381,28 +337,7 @@ plot(mod_suburb_15, which=c(1,2))
 ```
 
 ________________
-Individual Residual and MSE, CI,PI and onditions for ChaoYang Model
-
->>>>>>> 3586bbf470b1579224baecd73262c07f9a3666ec
-```{r}
-means = array(0, 1000)
-for (i in 1:1000) {
-  #Random Selecting Sample 
-ChaoYang_Sample<-sample_n(completed_listings_chaoyang, 1000)
-#Sample Model for ChaoYang District 
-mod_chaoyang_Sample <- lm(price_per_p ~ ., data =  
-ChaoYang_Sample)
-
-#Mean  residual of the first 1000 listings in ChaoYang
-
-means[i]=mean(abs(resid(mod_chaoyang_Sample)))
-# median(abs(resid(mod_chaoyang_Sample)))
-}
-
-meanRes_chaoyang<-data.frame(means=means)
-
-
-```
+Median Residual forChaoYang Model
 
 ```{r}
 median = array(0, 1000)
@@ -424,7 +359,7 @@ medianRes_chaoyang <-data.frame(median=median)
 #Density plot for Mean and Median Resid
 ```{r}
 densityplot(median,medianRes_chaoyang,main="Median Residual Denisty Plot For ChaoYang",
-        xlab="Median Residual",
+        xlab="Median Residual"
       )
 
 ```
@@ -470,7 +405,7 @@ medianRes_central <- data.frame(median=median)
 #Density Plot of Mean and Meidan Residual for Central District
 ```{r}
 densityplot(median,medianRes_central,main="Median Residual Denisty Plot For Central",
-        xlab="Median Residual",
+        xlab="Median Residual"
       )
 
 ```
@@ -497,7 +432,7 @@ medianRes_suburb<- data.frame(median=median)
 # Density Plot for Suburb Model
 ```{r}
 densityplot(median,medianRes_suburb,main="Median Residual Denisty Plot For Suburb",
-        xlab="Median Residual",
+        xlab="Median Residual"
       )
 ```
 
