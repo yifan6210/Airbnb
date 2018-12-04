@@ -9,9 +9,9 @@ library(tidyverse)
 library(readxl)
 library(stringr)
 library(dplyr)
-install.packages("mice")
 library(mice)
 require(leaps)
+require(mosaic)
 ```
 
 ```{r}
@@ -44,60 +44,6 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
 #one hot coding
 #for loop val in c("TV....")
 ```
-
-
-###### getting rid of dollar signs
-
-```{r}
-
-data_cleaned <- data_raw %>%  #from albert
-  mutate(
-    price = str_replace_all(price, "\\$", ""),
-    price = str_replace_all(price, ",", ""),
-    price = as.numeric(price)
-    )
-#change all factor to numerical in listings_numerical 
-#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
-#listings_numerical_cleaned <- listings_numerical %>%
- # mutate(
- # price = str_replace_all(price, "\\$", ""),
- # price = str_replace_all(price, ",", ""),
- # price = as.numeric(price),
- #   #weekly_price= as.numeric(weekly_price),
-   # monthly_price = as.numeric(monthly_price),
-    #security_deposit = as.numeric(security_deposit),
-    #cleaning_fee  = as.numeric(cleaning_fee ),
-    #extra_people = as.numeric(extra_people),
-    #zipcode = as.numeric(zipcode),
-   # host_response_rate = as.numeric(host_response_rate)
-    
-  
-```
-
-##### price become price/max commodate
-
-```{r}
-data_cleaned <- data_cleaned %>%
-  mutate(price_per_p = price/accommodates)
-=======
->>>>>>> 384033d0d35d1b9edbf21998f52438136284db48
-```
-
-##### regression models with all
-
-```{r}
-#only on numerical
-cor_data <- listings_numerical %>%
-  select(-c(latitude, longitude,host_response_rate))# get rid of chr
-# need to get rid of N/A, albert?
-
-
-cor_test <- listings_numerical%>%
-  select(price_per_p,extra_people,bedrooms,host_listings_count,bathrooms, beds, weekly_price, number_of_reviews,security_deposit,minimum_nights)
-cor(cor_test)
-```
---------------------------------------------------------------------------------------
-# Using the . in the formula interface includes all non-response variables in the data frame.
 
 # interpretation 
 ```{r}
@@ -153,13 +99,6 @@ ggplot(listings, aes(x=room_type, y =price_per_p))  +
 
 --------------------------------
 # getting rid of N/As
-```{r}
-# Run .null on all numerical and Catergorical Data
-mfull <- lm(price ~ ., data=listings_numerical)
-summary(mfull)
-
-# cannot run # mean imuputation 
-```
 
 ```{r}
 colSums(is.na(listings_numerical)) # counting how many N/As in each column
@@ -366,7 +305,16 @@ with(summary(stepwise_suburb), data.frame(cp, outmat))
 mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+bedrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+availability_60+host_listings_count+gym+essentials+washer+ heat+workspace, data = suburb)
 summary(mod_suburb_15)
 ```
+________________
+Assessing Conditions for models after stepwise:
 
+```{r}
+#Assessing Conditions
+plot(mod_chaoyang_18, which=c(1,2))
+plot(mod_central_14, which=c(1,2))
+plot(mod_suburb_15, which=c(1,2))
+
+```
 
 ________________
 Individual Residual and MSE, CI,PI and onditions for ChaoYang Model
@@ -428,18 +376,6 @@ median(abs(resid(mod_suburb_Sample)))
 
 ```
 
-________________
-Assessing Conditions for all model
-
-```{r}
-#Assessing Conditions
-plot(mod_chaoyang_full, which=c(1,2))
-plot(mod_central_distrcits, which=c(1,2))
-plot(mod_suburb, which=c(1,2))
-
-```
-
-
 
 
 
@@ -454,35 +390,3 @@ plot(mod_suburb, which=c(1,2))
 
 citation for mice: https://datascienceplus.com/imputing-missing-data-with-r-mice-package/
 for'polyreg':https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-packages-imputing-missing-values/
-
-
-#### additional code
-
-```{r}
-# data_cleaned <- data_raw %>%  #from albert
-#   mutate(
-#     price = str_replace_all(price, "\\$", ""),
-#     price = str_replace_all(price, ",", ""),
-#     price = as.numeric(price)
-#     )
-#change all factor to numerical in listings_numerical 
-#So it kept saying that NAs introduced by coercion when I try to get rid of the dollar sign. 
-```
-
-```{r}
-
-# listings_numerical_cleaned <- listings_numerical %>%
-#   mutate(
-#     price = str_replace_all(price, "\\$", ""),
-#     price = str_replace_all(price, ",", ""),
-#      price = as.numeric(price),
-#     weekly_price= as.numeric(weekly_price),
-#     monthly_price = as.numeric(monthly_price),
-#     security_deposit = as.numeric(security_deposit),
-#     cleaning_fee  = as.numeric(cleaning_fee ),
-#     extra_people = as.numeric(extra_people),
-#     zipcode = as.numeric(zipcode),
-#     host_response_rate = as.numeric(host_response_rate)
-#     )
-  
-```
