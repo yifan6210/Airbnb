@@ -7,5 +7,138 @@ library(dplyr)
 library(mice)
 require(leaps)
 require(mosaic)
+#install.packages("caTools")
+require(caTools)
 ```
 
+```{r}
+listings <- read_excel("Clb.xlsx", skip = 1)%>%
+  mutate(price_per_p = price/accommodates) #all variables, 97. from albert + mutated price 
+listings_numerical <- read_excel("Clb_numerical.xlsx", skip=1) %>%
+select(-(cancellation_policy))%>%
+  mutate(price_per_p = price/accommodates)# all numerical variables, 35 
+```
+##### data cleaning 
+
+```{r}
+completed_listings_chaoyang <-listings %>%
+  filter(neighbourhood_cleansed == "Chaoyang")%>%
+  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+  select(-amenities) %>%
+  mice(m=5,maxit=5,meth='pmm',seed=620) # fill in missing N/A bathrooms, bedrooms and beds
+
+completed_listings_chaoyang <- complete(completed_listings_chaoyang,1)
+colSums(is.na(completed_listings_chaoyang))
+```
+
+```{r}
+set.seed(101) 
+train_chaoyang<-sample_frac(completed_listings_chaoyang, 0.8)
+    sid<-as.numeric(rownames(train_chaoyang)) # because rownames() returns character
+    test_chaoyang<-completed_listings_chaoyang[-sid,]
+```
+
+```{r}
+mod_chaoyang_train <- lm(price_per_p ~ ., data = train_chaoyang)
+summary(mod_chaoyang_train)
+```
+
+```{r}
+stepwise_chaoyang_train <- regsubsets(price_per_p~ ., data = train_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
+with(summary(stepwise_chaoyang_train), data.frame(cp, outmat)) #according to smallest cp, pick 18
+```
+
+```{r}
+mod_chaoyang_15 <- lm(price_per_p ~host_response_rate+beds+guests_included+extra_people+availability_30+availability_365 +number_of_reviews+room_type+parking+tv+gym+washer+dryer+heat, data = train_chaoyang)
+summary(mod_chaoyang_15)
+```
+
+```{r}
+chaoyang_pred <- predict(mod_chaoyang_15,test_chaoyang)
+
+chaoyang_actuals_preds <- data.frame(cbind(actuals=test_chaoyang$price_per_p, predicteds=chaoyang_pred))
+
+cor(chaoyang_actuals_preds)
+
+min_max_accuracy <- mean(apply(chaoyang_actuals_preds, 1, min) / apply(chaoyang_actuals_preds, 1, max)) 
+min_max_accuracy
+```
+
+_______________________
+suburbs 
+
+```{r}
+suburb <- listings %>%
+  filter (neighbourhood_cleansed == "Huairou"| neighbourhood_cleansed == "Mentougou"| neighbourhood_cleansed == "Yanqing")%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
+
+suburb <- complete(suburb,1)
+colSums(is.na(suburb))
+```
+
+```{r}
+set.seed(1024) 
+train_suburb<-sample_frac(suburb, 0.8)
+    sid<-as.numeric(rownames(train_suburb)) # because rownames() returns character
+    test_suburb<-suburb[-sid,]
+```
+
+```{r}
+mod_suburb_train <- lm(price_per_p ~ ., data = train_suburb)
+summary(mod_suburb_train)
+```
+
+```{r}
+stepwise_suburb_train <- regsubsets(price_per_p~ ., data = train_suburb, nbest = 1, nvmax = 20, method = "seqrep")
+with(summary(stepwise_suburb_train), data.frame(cp, outmat)) #according to smallest cp, pick 14
+```
+
+```{r}
+mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+instant_bookablet+host_listings_count+wifi+gym+essentials+kitchen+washer+ heat, data = train_suburb)
+summary(mod_suburb_15)
+```
+
+```{r}
+suburb_pred <- predict(mod_suburb_15,test_suburb)
+
+suburb_actuals_preds <- data.frame(cbind(actuals=test_suburb$price_per_p, predicteds=suburb_pred))
+
+cor(suburb_actuals_preds)
+
+min_max_accuracy <- mean(apply(suburb_actuals_preds, 1, min) / apply(suburb_actuals_preds, 1, max)) 
+min_max_accuracy
+```
+
+
+
+### Citation
+
+http://r-statistics.co/Linear-Regression.html
