@@ -43,6 +43,7 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
   
 #one hot coding
 #for loop val in c("TV....")
+# 48 numerical + categorical 
 ```
 
 
@@ -177,15 +178,6 @@ summary(mamenities_test) # small results
 
 ————————————————————————————
 # Chaoyang
-
-```{r}
-listings_chaoyang_amenities <- listings_amenities_test %>%
-  filter(neighbourhood_cleansed == "Chaoyang")%>%
-  select(-neighbourhood_cleansed)
-
-mod_chaoyang <- lm(price_per_p ~ ., data = listings_chaoyang_amenities)
-summary(mod_chaoyang)
-```
 
 ```{r}
 #names(listings_chaoyang)
@@ -436,9 +428,24 @@ densityplot(median,medianRes_suburb,main="Median Residual Denisty Plot For Subur
       )
 ```
 
+________________
+Log for suburb
+```{r}
+suburb <- suburb%>%
+  mutate(log_price = log(price_per_p))%>%
+  select(-price_per_p)
+         
+stepwise_suburb_log <- regsubsets(log_price~ ., data = suburb, nbest = 1, nvmax = 20, method = "seqrep")
+with(summary(stepwise_suburb_log), data.frame(cp, outmat))
+```
 
 
+```{r}
+mod_suburb_14_log <- lm(log_price ~bathrooms+beds+extra_people+minimum_nights+availability_90+availability_365+calculated_host_listings_count+room_type+availability_60+host_listings_count+gym+essentials+washer+workspace, data = suburb)
+summary(mod_suburb_14_log)
 
+plot(mod_suburb_14_log, which=c(1,2))
+```
 
 
 

@@ -58,16 +58,16 @@ summary(mod_chaoyang_train)
 
 ```{r}
 stepwise_chaoyang_train <- regsubsets(price_per_p~ ., data = train_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
-with(summary(stepwise_chaoyang_train), data.frame(cp, outmat)) #according to smallest cp, pick 18
+with(summary(stepwise_chaoyang_train), data.frame(cp, outmat)) #according to smallest cp, pick 17
 ```
 
 ```{r}
-mod_chaoyang_15 <- lm(price_per_p ~host_response_rate+beds+guests_included+extra_people+availability_30+availability_365 +number_of_reviews+room_type+parking+tv+gym+washer+dryer+heat, data = train_chaoyang)
-summary(mod_chaoyang_15)
+mod_chaoyang_17 <- lm(price_per_p ~host_response_rate+beds+guests_included+extra_people+availability_30+availability_365 +number_of_reviews+review_scores_rating+review_scores_cleanliness+room_type+parking+gym+washer+dryer+heat, data = train_chaoyang)
+summary(mod_chaoyang_17)
 ```
 
 ```{r}
-chaoyang_pred <- predict(mod_chaoyang_15,test_chaoyang)
+chaoyang_pred <- predict(mod_chaoyang_17,test_chaoyang)
 
 chaoyang_actuals_preds <- data.frame(cbind(actuals=test_chaoyang$price_per_p, predicteds=chaoyang_pred))
 
@@ -118,16 +118,16 @@ summary(mod_suburb_train)
 
 ```{r}
 stepwise_suburb_train <- regsubsets(price_per_p~ ., data = train_suburb, nbest = 1, nvmax = 20, method = "seqrep")
-with(summary(stepwise_suburb_train), data.frame(cp, outmat)) #according to smallest cp, pick 14
+with(summary(stepwise_suburb_train), data.frame(cp, outmat)) #according to smallest cp, pick 11
 ```
 
 ```{r}
-mod_suburb_15 <- lm(price_per_p ~host_response_rate+bathrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+instant_bookablet+host_listings_count+wifi+gym+essentials+kitchen+washer+ heat, data = train_suburb)
-summary(mod_suburb_15)
+mod_suburb_12 <- lm(price_per_p ~bedrooms+beds+extra_people+availability_365+calculated_host_listings_count+room_type+host_listings_count+gym+essentials+washer+ heat + workspace, data = train_suburb)
+summary(mod_suburb_12)
 ```
 
 ```{r}
-suburb_pred <- predict(mod_suburb_15,test_suburb)
+suburb_pred <- predict(mod_suburb_12,test_suburb)
 
 suburb_actuals_preds <- data.frame(cbind(actuals=test_suburb$price_per_p, predicteds=suburb_pred))
 
@@ -136,6 +136,239 @@ cor(suburb_actuals_preds)
 min_max_accuracy <- mean(apply(suburb_actuals_preds, 1, min) / apply(suburb_actuals_preds, 1, max)) 
 min_max_accuracy
 ```
+
+
+__________________________________
+
+```{r}
+suburb_Huairou <- listings %>%
+  filter (neighbourhood_cleansed == "Huairou")%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
+
+suburb_Huairou <- complete(suburb_Huairou,1)
+colSums(is.na(suburb_Huairou))
+```
+
+```{r}
+mod_suburb_Huairou <- lm(price_per_p ~ ., data = suburb_Huairou)
+summary(mod_suburb_Huairou)
+
+plot(mod_suburb_Huairou, which=c(1,2))
+
+```
+
+```{r}
+median = array(0, 552)
+for (i in 1:552) {
+  #Random Selecting Sample 
+Huairou_Sample<-sample_n(suburb_Huairou, 552)
+
+mod_Hairou_Sample <- lm(price_per_p ~ ., data =  
+Huairou_Sample)
+
+# median residual of the first 1000 listings in ChaoYang
+
+median[i]=median(abs(resid(mod_Hairou_Sample)))
+}
+
+medianRes_huairou <-data.frame(median=median)
+```
+
+#Density plot for Mean and Median Resid
+```{r}
+densityplot(median,medianRes_huairou,main="Median Residual Denisty Plot For Huairou",
+        xlab="Median Residual"
+      )
+
+```
+
+```{r}
+suburb_Yanqing <- listings %>%
+  filter (neighbourhood_cleansed == "Yanqing")%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
+
+suburb_Yanqing <- complete(suburb_Yanqing,1)
+colSums(is.na(suburb_Yanqing))
+```
+
+```{r}
+mod_suburb_Yanqing <- lm(price_per_p ~ ., data = suburb_Yanqing)
+summary(mod_suburb_Yanqing)
+
+plot(mod_suburb_Yanqing, which=c(1,2))
+
+```
+
+```{r}
+median = array(0, 500)
+for (i in 1:500) {
+  #Random Selecting Sample 
+Yanqing_Sample<-sample_n(suburb_Yanqing, 500)
+
+mod_Yanqing_Sample <- lm(price_per_p ~ ., data =  
+Yanqing_Sample)
+
+# median residual of the first 1000 listings in ChaoYang
+
+median[i]=median(abs(resid(mod_Yanqing_Sample)))
+}
+
+medianRes_Yanqing <-data.frame(median=median)
+```
+
+#Density plot for Mean and Median Resid
+```{r}
+densityplot(median,medianRes_Yanqing,main="Median Residual Denisty Plot For Yanqing",
+        xlab="Median Residual"
+      )
+
+```
+
+```{r}
+suburb_Mentougou <- listings %>%
+  filter (neighbourhood_cleansed == "Mentougou")%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
+
+suburb_Mentougou <- complete(suburb_Mentougou,1)
+colSums(is.na(suburb_Mentougou))
+```
+
+```{r}
+mod_suburb_Mentougou <- lm(price_per_p ~ ., data = suburb_Mentougou)
+summary(mod_suburb_Mentougou)
+
+plot(mod_suburb_Mentougou, which=c(1,2))
+
+```
+
+```{r}
+median = array(0, 73)
+for (i in 1:73) {
+  #Random Selecting Sample 
+Mentougou_Sample<-sample_n(suburb_Mentougou, 73)
+
+mod_Mentougou_Sample <- lm(price_per_p ~ ., data =  
+Huairou_Sample)
+
+# median residual of the first 1000 listings in ChaoYang
+
+median[i]=median(abs(resid(mod_Mentougou_Sample)))
+}
+
+medianRes_Mentougou <-data.frame(median=median)
+```
+
+#Density plot for Mean and Median Resid
+```{r}
+densityplot(median,medianRes_Mentougou,main="Median Residual Denisty Plot For Mentougou",
+        xlab="Median Residual"
+      )
+
+```
+__________________________________
+
+```{r}
+suburb_Haidian <- listings %>%
+  filter (neighbourhood_cleansed == "Haidian")%>%
+select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities, availability_60,host_listings_count)%>%
+  mutate(host_response_rate = as.numeric(host_response_rate))%>%
+  mutate(parking = str_detect(amenities, "park"),
+         wifi = str_detect(amenities,"wifi"),
+         tv = str_detect(amenities,"TV"),
+         ac = str_detect(amenities,"Air conditioning"),
+         gym = str_detect(amenities,"Gym"),
+         essentials = str_detect(amenities,"Essentials"),
+         kitchen = str_detect(amenities,"Kitchen"),
+         washer = str_detect(amenities,"Washer"),
+         dryer = str_detect(amenities,"Dryer"),
+         elevator = str_detect(amenities,"Elavator"),
+         heat = str_detect(amenities,"Heating"),
+         workspace = str_detect(amenities,"Laptop friendly workspace"))%>%
+         select(-amenities)%>%
+         mice(m=5,maxit=5,meth='pmm',seed=621)
+
+suburb_Haidian <- complete(suburb_Haidian,1)
+colSums(is.na(suburb_Haidian))
+```
+
+```{r}
+mod_suburb_Haidian <- lm(price_per_p ~ ., data = suburb_Haidian)
+summary(mod_suburb_Haidian)
+
+plot(mod_suburb_Haidian, which=c(1,2))
+
+```
+
+```{r}
+median = array(0, 1000)
+for (i in 1:1000) {
+  #Random Selecting Sample 
+Haidian_Sample<-sample_n(suburb_Haidian, 1000)
+
+mod_Haidian_Sample <- lm(price_per_p ~ ., data =  
+Haidian_Sample)
+
+# median residual of the first 1000 listings in ChaoYang
+
+median[i]=median(abs(resid(mod_Haidian_Sample)))
+}
+
+medianRes_Haidian <-data.frame(median=median)
+```
+
+#Density plot for Mean and Median Resid
+```{r}
+densityplot(median,medianRes_Haidian,main="Median Residual Denisty Plot For Haidian",
+        xlab="Median Residual"
+      )
+
+```
+
 
 
 
