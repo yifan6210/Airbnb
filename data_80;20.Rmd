@@ -11,6 +11,7 @@ require(mosaic)
 require(caTools)
 ```
 
+
 ```{r}
 listings <- read_excel("Clb.xlsx", skip = 1)%>%
   mutate(price_per_p = price/accommodates) #all variables, 97. from albert + mutated price 
@@ -23,7 +24,9 @@ select(-(cancellation_policy))%>%
 ```{r}
 completed_listings_chaoyang <-listings %>%
   filter(neighbourhood_cleansed == "Chaoyang")%>%
-  select(host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
+  filter(price_per_p <= 500)%>% # 8092 to 7999
+  select(listing_url,
+         host_response_rate,bathrooms,bedrooms,beds,guests_included,extra_people,minimum_nights,maximum_nights,availability_30,availability_90,availability_365,number_of_reviews,review_scores_rating,review_scores_cleanliness,calculated_host_listings_count,price_per_p,room_type,instant_bookable, amenities)%>%
   mutate(host_response_rate = as.numeric(host_response_rate))%>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
@@ -54,28 +57,88 @@ train_chaoyang<-sample_frac(completed_listings_chaoyang, 0.8)
 ```{r}
 mod_chaoyang_train <- lm(price_per_p ~ ., data = train_chaoyang)
 summary(mod_chaoyang_train)
+plot(mod_chaoyang_train , which=c(1,2))
 ```
 
 ```{r}
-stepwise_chaoyang_train <- regsubsets(price_per_p~ ., data = train_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
-with(summary(stepwise_chaoyang_train), data.frame(cp, outmat)) #according to smallest cp, pick 17
+completed_listings_chaoyang <- completed_listings_chaoyang %>%
+  mutate(log_price = log(price_per_p))%>%
+  select(-(price_per_p))
+```
+# rerun set seed part before this 
+```{r}
+mod_chaoyang_train_log <- lm(log_price ~ ., data = train_chaoyang)
+summary(mod_chaoyang_train_log)
+plot(mod_chaoyang_train_log , which=c(1,2))
 ```
 
 ```{r}
-mod_chaoyang_17 <- lm(price_per_p ~host_response_rate+beds+guests_included+extra_people+availability_30+availability_365 +number_of_reviews+review_scores_rating+review_scores_cleanliness+room_type+parking+gym+washer+dryer+heat, data = train_chaoyang)
-summary(mod_chaoyang_17)
+stepwise_chaoyang_train <- regsubsets(log_price~ ., data = train_chaoyang, nbest = 1, nvmax = 30, method = "seqrep")
+with(summary(stepwise_chaoyang_train), data.frame(cp, outmat)) #according to smallest cp, pick 20
 ```
 
 ```{r}
-chaoyang_pred <- predict(mod_chaoyang_17,test_chaoyang)
-
-chaoyang_actuals_preds <- data.frame(cbind(actuals=test_chaoyang$price_per_p, predicteds=chaoyang_pred))
-
-cor(chaoyang_actuals_preds)
-
-min_max_accuracy <- mean(apply(chaoyang_actuals_preds, 1, min) / apply(chaoyang_actuals_preds, 1, max)) 
-min_max_accuracy
+mod_chaoyang_20 <- lm(log_price ~host_response_rate+bathrooms+beds+guests_included+extra_people+minimum_nights+availability_30+availability_365 +number_of_reviews+review_scores_cleanliness+calculated_host_listings_count+room_type+instant_bookable+tv+gym+essentials+washer+dryer+heat, data = train_chaoyang)
+summary(mod_chaoyang_20)
 ```
+
+```{r}
+chaoyang_pred <- predict(mod_chaoyang_20,test_chaoyang)
+
+chaoyang_actuals_preds <- data.frame(cbind(actuals=test_chaoyang$log_price, predicteds=chaoyang_pred))
+
+mean(abs((chaoyang_actuals_preds$predicteds - chaoyang_actuals_preds$actuals)))
+```
+
+```{r}
+set.seed(6210)
+median = array(0, 1000)
+for (i in 1:1000) {
+  #Random Selecting Sample 
+chaoyang_Sample<-sample_n(test_chaoyang, 1000)
+
+mod_chaoyang_Sample <- lm(log_price ~ host_response_rate+bathrooms+beds+guests_included+extra_people+minimum_nights+availability_30+availability_365 +number_of_reviews+review_scores_cleanliness+calculated_host_listings_count+room_type+instant_bookable+tv+gym+essentials+washer+dryer+heat, data =  
+chaoyang_Sample)
+
+# median residual of the first 1000 listings in ChaoYang
+
+median[i]=median(abs(resid(mod_chaoyang_Sample)))
+}
+
+medianRes_chaoyang <-data.frame(median=median)
+```
+
+#Density plot for Mean and Median Resid
+```{r}
+densityplot(median,medianRes_chaoyang,main="Median Residual Denisty Plot For Chaoyang",
+        xlab="Median Residual"
+      )
+
+```
+
+# pick the five that has the most negative residual
+
+```{r}
+completed_listings_chaoyang <- completed_listings_chaoyang %>%
+  mutate(predict = predict(mod_chaoyang_20,completed_listings_chaoyang ))%>%
+  mutate(actual = log(price_per_p) )%>%
+  mutate(residual = actual - predict)
+```
+
+https://www.airbnb.com/rooms/28477782
+https://www.airbnb.com/rooms/24213853
+https://www.airbnb.com/rooms/28495309
+https://www.airbnb.com/rooms/28469248
+https://www.airbnb.com/rooms/21050014
+
+
+
+
+
+
+
+
+
 
 _______________________
 suburbs 
@@ -131,10 +194,14 @@ suburb_pred <- predict(mod_suburb_12,test_suburb)
 
 suburb_actuals_preds <- data.frame(cbind(actuals=test_suburb$price_per_p, predicteds=suburb_pred))
 
-cor(suburb_actuals_preds)
+cor(suburb_actuals_preds)4
 
 min_max_accuracy <- mean(apply(suburb_actuals_preds, 1, min) / apply(suburb_actuals_preds, 1, max)) 
 min_max_accuracy
+
+mape_suburbs <- mean(abs((suburb_actuals_preds$predicteds - suburb_actuals_preds$actuals))/suburb_actuals_preds$actuals)
+
+mape_suburbs
 ```
 
 
@@ -173,6 +240,7 @@ plot(mod_suburb_Huairou, which=c(1,2))
 ```
 
 ```{r}
+set.seed(113)
 median = array(0, 552)
 for (i in 1:552) {
   #Random Selecting Sample 
@@ -181,7 +249,6 @@ Huairou_Sample<-sample_n(suburb_Huairou, 552)
 mod_Hairou_Sample <- lm(price_per_p ~ ., data =  
 Huairou_Sample)
 
-# median residual of the first 1000 listings in ChaoYang
 
 median[i]=median(abs(resid(mod_Hairou_Sample)))
 }
@@ -228,6 +295,24 @@ summary(mod_suburb_Yanqing)
 plot(mod_suburb_Yanqing, which=c(1,2))
 
 ```
+
+```{r}
+suburb_Yanqing <- suburb_Yanqing%>%
+  mutate(log_price = log(price_per_p))%>%
+  select(-price_per_p)
+         
+stepwise_suburb_Yanqing_log <- regsubsets(log_price~ ., data = suburb_Yanqing, nbest = 1, nvmax = 20, method = "seqrep")
+with(summary(stepwise_suburb_Yanqing_log), data.frame(cp, outmat))
+
+```
+
+```{r}
+mod_Yanqing_16 <- lm(log_price ~host_response_rate+bathrooms+beds+extra_people+minimum_nights+availability_90+calculated_host_listings_count+room_type+instant_bookable+availability_60+host_listings_count+parking+gym+essentials+washer, data = suburb_Yanqing)
+summary(mod_Yanqing_16)
+
+plot(mod_Yanqing_16, which=c(1,2))
+```
+
 
 ```{r}
 median = array(0, 500)
@@ -287,6 +372,7 @@ plot(mod_suburb_Mentougou, which=c(1,2))
 ```
 
 ```{r}
+set.seed(111)
 median = array(0, 73)
 for (i in 1:73) {
   #Random Selecting Sample 

@@ -25,7 +25,7 @@ select(-(cancellation_policy))%>%
 ##### data cleaning 
 
 ```{r}
-listings_amenities <- listings %>% # contains only amenities 
+listings_amenities <- listings %>% # contains price
 select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities, price) %>%
   mutate(parking = str_detect(amenities, "park"),
          wifi = str_detect(amenities,"wifi"),
@@ -39,7 +39,8 @@ select(neighbourhood_cleansed,room_type,accommodates,instant_bookable, amenities
          elevator = str_detect(amenities,"Elavator"),
          heat = str_detect(amenities,"Heating"),
          workspace = str_detect(amenities,"Laptop friendly workspace"),
-         price_per_p = price/accommodates)  
+         price_per_p = price/accommodates)%>%
+  select(-amenities)
   
 #one hot coding
 #for loop val in c("TV....")
@@ -329,7 +330,7 @@ plot(mod_suburb_15, which=c(1,2))
 ```
 
 ________________
-Median Residual forChaoYang Model
+Median Residual for ChaoYang Model
 
 ```{r}
 median = array(0, 1000)
@@ -406,11 +407,12 @@ ________________
 Median Residual for Suburb Model
 
 ```{r}
+set.seed(199)
 median = array(0, 1000)
 for (i in 1:1000) {
 #Random Selecting Sample 
-suburb_Sample<-sample_n(central_distrcits, 1000)
-#Sample Model for ChaoYang District 
+suburb_Sample<-sample_n(suburb, 1000)
+
 mod_suburb_Sample <- lm(price_per_p ~ ., data =suburb_Sample)
 
 #median residual
